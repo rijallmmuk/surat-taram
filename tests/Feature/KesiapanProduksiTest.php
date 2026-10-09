@@ -177,3 +177,7 @@ test('tautan halaman memakai https dan domain proxy hanya bila proxy tepercaya',
     'lewat ngrok' => ['127.0.0.1', true],
     'tanpa proxy' => [null, false],
 ]);
+
+test('tautan berkas publik tidak terikat ke APP_URL sehingga tetap terbuka dari domain proxy', function () {
+    expect(Storage::disk('public')->url('nagari/logo.png'))->toBe('/storage/nagari/logo.png');
+});

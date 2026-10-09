@@ -41,7 +41,8 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            // Relatif agar pratinjau logo/stempel tetap tampil di alamat mana pun (domain asli maupun ngrok).
+            'url' => '/storage',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
