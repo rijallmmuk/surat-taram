@@ -1,0 +1,342 @@
+[
+ [
+  1,
+  "bab-1",
+  "Bab 1. Mengenal Layanan Surat Nagari Taram"
+ ],
+ [
+  2,
+  "sub-1-1",
+  "1.1 Apa itu Layanan Surat Nagari Taram"
+ ],
+ [
+  2,
+  "sub-1-2",
+  "1.2 Siapa saja pengguna aplikasi"
+ ],
+ [
+  2,
+  "sub-1-3",
+  "1.3 Alur pelayanan surat"
+ ],
+ [
+  2,
+  "sub-1-4",
+  "1.4 Arti status pengajuan"
+ ],
+ [
+  2,
+  "sub-1-5",
+  "1.5 Jenis surat yang tersedia"
+ ],
+ [
+  2,
+  "sub-1-6",
+  "1.6 Istilah yang sering dipakai"
+ ],
+ [
+  1,
+  "bab-2",
+  "Bab 2. Memulai: Membuka dan Masuk ke Aplikasi"
+ ],
+ [
+  2,
+  "sub-2-1",
+  "2.1 Yang perlu disiapkan"
+ ],
+ [
+  2,
+  "sub-2-2",
+  "2.2 Halaman depan"
+ ],
+ [
+  2,
+  "sub-2-3",
+  "2.3 Masuk ke aplikasi"
+ ],
+ [
+  2,
+  "sub-2-4",
+  "2.4 Mengenal tampilan setelah masuk"
+ ],
+ [
+  2,
+  "sub-2-5",
+  "2.5 Notifikasi, profil, dan keluar"
+ ],
+ [
+  2,
+  "sub-2-6",
+  "2.6 Mengganti kata sandi"
+ ],
+ [
+  1,
+  "bab-3",
+  "Bab 3. Panduan Warga"
+ ],
+ [
+  2,
+  "sub-3-1",
+  "3.1 Dasbor warga"
+ ],
+ [
+  2,
+  "sub-3-2",
+  "3.2 Sebelum mengajukan: periksa data diri"
+ ],
+ [
+  2,
+  "sub-3-3",
+  "3.3 Mengajukan surat: Langkah 1 — Periksa data diri"
+ ],
+ [
+  2,
+  "sub-3-4",
+  "3.4 Mengajukan surat: Langkah 2 — Pilih surat"
+ ],
+ [
+  2,
+  "sub-3-5",
+  "3.5 Mengajukan surat: Langkah 3 — Isi formulir"
+ ],
+ [
+  2,
+  "sub-3-6",
+  "3.6 Mengajukan surat: Langkah 4 — Berkas dan tinjauan"
+ ],
+ [
+  2,
+  "sub-3-7",
+  "3.7 Memantau dan membatalkan pengajuan"
+ ],
+ [
+  2,
+  "sub-3-8",
+  "3.8 Jika pengajuan ditolak: mengajukan ulang"
+ ],
+ [
+  2,
+  "sub-3-9",
+  "3.9 Mengunduh surat yang sudah terbit"
+ ],
+ [
+  2,
+  "sub-3-10",
+  "3.10 Mengajukan perubahan data diri"
+ ],
+ [
+  2,
+  "sub-3-11",
+  "3.11 Pertanyaan yang sering diajukan warga"
+ ],
+ [
+  1,
+  "bab-4",
+  "Bab 4. Panduan Sekretaris dan Petugas Pelayanan"
+ ],
+ [
+  2,
+  "sub-4-1",
+  "4.1 Tugas dan dasbor petugas"
+ ],
+ [
+  2,
+  "sub-4-2",
+  "4.2 Antrean verifikasi"
+ ],
+ [
+  2,
+  "sub-4-3",
+  "4.3 Memeriksa pengajuan"
+ ],
+ [
+  2,
+  "sub-4-4",
+  "4.4 Nomor surat"
+ ],
+ [
+  2,
+  "sub-4-5",
+  "4.5 Memverifikasi atau menolak pengajuan"
+ ],
+ [
+  2,
+  "sub-4-6",
+  "4.6 Pengajuan yang dikembalikan Wali Nagari"
+ ],
+ [
+  2,
+  "sub-4-7",
+  "4.7 Pengajuan petugas untuk warga yang datang ke kantor"
+ ],
+ [
+  2,
+  "sub-4-8",
+  "4.8 Memeriksa koreksi data warga"
+ ],
+ [
+  2,
+  "sub-4-9",
+  "4.9 Mengelola data penduduk"
+ ],
+ [
+  2,
+  "sub-4-10",
+  "4.10 Arsip, riwayat, dan rekap laporan"
+ ],
+ [
+  2,
+  "sub-4-11",
+  "4.11 Kop surat, stempel, dan data jorong"
+ ],
+ [
+  1,
+  "bab-5",
+  "Bab 5. Panduan Wali Nagari"
+ ],
+ [
+  2,
+  "sub-5-1",
+  "5.1 Tugas dan dasbor Wali Nagari"
+ ],
+ [
+  2,
+  "sub-5-2",
+  "5.2 Antrean tanda tangan"
+ ],
+ [
+  2,
+  "sub-5-3",
+  "5.3 Meninjau dan menerbitkan surat"
+ ],
+ [
+  2,
+  "sub-5-4",
+  "5.4 Mengembalikan surat ke petugas"
+ ],
+ [
+  2,
+  "sub-5-5",
+  "5.5 Mengunggah tanda tangan Wali Nagari"
+ ],
+ [
+  2,
+  "sub-5-6",
+  "5.6 Arsip, rekap, dan data penduduk"
+ ],
+ [
+  1,
+  "bab-6",
+  "Bab 6. Panduan Admin Nagari"
+ ],
+ [
+  2,
+  "sub-6-1",
+  "6.1 Tugas Admin Nagari"
+ ],
+ [
+  2,
+  "sub-6-2",
+  "6.2 Pejabat Nagari dan akun petugas"
+ ],
+ [
+  2,
+  "sub-6-3",
+  "6.3 Log aktivitas"
+ ],
+ [
+  2,
+  "sub-6-4",
+  "6.4 Data jorong"
+ ],
+ [
+  1,
+  "bab-7",
+  "Bab 7. Builder Jenis Surat"
+ ],
+ [
+  2,
+  "sub-7-1",
+  "7.1 Cara kerja Builder Jenis Surat"
+ ],
+ [
+  2,
+  "sub-7-2",
+  "7.2 Daftar jenis surat"
+ ],
+ [
+  2,
+  "sub-7-3",
+  "7.3 Langkah 1 — Nama dan nomor surat"
+ ],
+ [
+  2,
+  "sub-7-4",
+  "7.4 Langkah 2 — Pertanyaan untuk warga"
+ ],
+ [
+  2,
+  "sub-7-5",
+  "7.5 Langkah 2 — Pengaturan lain, kelompok, dan tabel"
+ ],
+ [
+  2,
+  "sub-7-6",
+  "7.6 Langkah 3 — Isi surat"
+ ],
+ [
+  2,
+  "sub-7-7",
+  "7.7 Langkah 3 — Menyebut data warga di dalam kalimat"
+ ],
+ [
+  2,
+  "sub-7-8",
+  "7.8 Langkah 3 — Kotak rincian, tabel, dan bagian bersyarat"
+ ],
+ [
+  2,
+  "sub-7-9",
+  "7.9 Langkah 4 — Berkas persyaratan"
+ ],
+ [
+  2,
+  "sub-7-10",
+  "7.10 Langkah 5 — Mengaktifkan dan menyimpan"
+ ],
+ [
+  2,
+  "sub-7-11",
+  "7.11 Memeriksa hasil dengan simulasi PDF"
+ ],
+ [
+  2,
+  "sub-7-12",
+  "7.12 Mengubah jenis surat yang sudah dipakai"
+ ],
+ [
+  2,
+  "sub-7-13",
+  "7.13 Contoh lengkap dan kesalahan yang sering terjadi"
+ ],
+ [
+  1,
+  "bab-8",
+  "Bab 8. Lampiran"
+ ],
+ [
+  2,
+  "sub-8-1",
+  "8.1 Ringkasan siapa dapat melakukan apa"
+ ],
+ [
+  2,
+  "sub-8-2",
+  "8.2 Pemecahan masalah"
+ ],
+ [
+  2,
+  "sub-8-3",
+  "8.3 Daftar periksa harian petugas"
+ ]
+]

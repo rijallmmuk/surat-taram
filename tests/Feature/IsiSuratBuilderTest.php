@@ -1,5 +1,6 @@
 <?php
 
+use App\Filament\Resources\JenisSurats\Pages\CreateJenisSurat;
 use App\Filament\Resources\JenisSurats\Pages\EditJenisSurat;
 use App\Models\JenisSurat;
 use App\Models\User;
@@ -214,4 +215,19 @@ test('pratinjau blok di builder memakai teks pertanyaan terbaru, bukan nama dari
 
     expect($pratinjau)->toContain('Nama tempat usaha')->not->toContain('Nama Usaha')->not->toContain('{{')
         ->and($konten['content'][0]['attrs']['label'])->toBe('Rincian data — tampil bila Nama tempat usaha diisi');
+});
+
+test('editor isi surat dibuat ulang dengan daftar data terbaru setelah pertanyaan ditambah', function () {
+    $this->actingAs(User::where('role', 'admin')->firstOrFail());
+    $kunciEditor = fn (string $html): ?string => preg_match('/wire:key="(isi-surat-[0-9a-f]{32})"/', $html, $cocok) ? $cocok[1] : null;
+
+    $form = Livewire::test(CreateJenisSurat::class);
+    $sebelum = $kunciEditor($form->html());
+
+    $form->set('data.skemaFormFields.baru', ['label' => null, 'nama_field' => null, 'tipe_field' => null, 'kolomTabels' => []])
+        ->set('data.skemaFormFields.baru.label', 'Nama usaha')
+        ->set('data.skemaFormFields.baru.cara_menjawab', 'teks');
+
+    expect($sebelum)->not->toBeNull()
+        ->and($kunciEditor($form->html()))->not->toBeNull()->not->toBe($sebelum);
 });

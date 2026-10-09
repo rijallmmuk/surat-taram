@@ -29,3 +29,7 @@ Thumbs.db
 
 # Stempel dan tanda tangan resmi: jangan masuk riwayat git
 /database/seeders/aset-resmi/
+
+# Profil Chrome dan status tab alat screenshot panduan
+/docs/panduan-pengguna/alat/.profil-chrome/
+/docs/panduan-pengguna/alat/.tab.json

@@ -25,6 +25,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ViewField;
 use Filament\Schemas\Components\Callout;
 use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -793,27 +794,35 @@ class JenisSuratForm
                                 ->reorderable(false)
                                 ->hiddenLabel()
                                 ->schema([
-                                    RichEditor::make('konten')
-                                        ->hiddenLabel()
-                                        ->required()
-                                        ->json()
-                                        ->default(fn (): array => TemplatSurat::bawaan())
-                                        ->mergeTags(fn (Get $get): array => app(KatalogTagSurat::class)->daftar((array) ($get('../../skemaFormFields') ?? [])))
-                                        ->customBlocks(PenyusunSurat::BLOK)
-                                        ->toolbarButtons([
-                                            ['bold', 'italic', 'underline'],
-                                            ['alignStart', 'alignCenter', 'alignEnd', 'alignJustify'],
-                                            ['bulletList', 'orderedList'],
-                                            ['mergeTags', 'customBlocks'],
-                                            ['undo', 'redo'],
-                                        ])
-                                        ->extraInputAttributes([
-                                            'class' => 'font-serif text-[13.5px] leading-relaxed',
-                                            'style' => 'font-family: "Bookman Old Style", "Times New Roman", Georgia, serif; min-height: 480px; background-color: #ffffff;',
-                                        ])
-                                        ->extraAttributes([
-                                            'class' => 'surat-template-editor border-x border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900',
-                                        ])
+                                    // Editor dibuat sekali di browser bersama daftar data "{{". Kunci ini berubah bila pertanyaan
+                                    // berubah sehingga Livewire membuat ulang editor dengan daftar data terbaru.
+                                    Group::make([
+                                        RichEditor::make('konten')
+                                            ->hiddenLabel()
+                                            ->required()
+                                            ->json()
+                                            ->default(fn (): array => TemplatSurat::bawaan())
+                                            ->mergeTags(fn (Get $get): array => app(KatalogTagSurat::class)->daftar((array) ($get('../../skemaFormFields') ?? [])))
+                                            ->customBlocks(PenyusunSurat::BLOK)
+                                            ->toolbarButtons([
+                                                ['bold', 'italic', 'underline'],
+                                                ['alignStart', 'alignCenter', 'alignEnd', 'alignJustify'],
+                                                ['bulletList', 'orderedList'],
+                                                ['mergeTags', 'customBlocks'],
+                                                ['undo', 'redo'],
+                                            ])
+                                            ->extraInputAttributes([
+                                                'class' => 'font-serif text-[13.5px] leading-relaxed',
+                                                'style' => 'font-family: "Bookman Old Style", "Times New Roman", Georgia, serif; min-height: 480px; background-color: #ffffff;',
+                                            ])
+                                            ->extraAttributes([
+                                                'class' => 'surat-template-editor border-x border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900',
+                                            ])
+                                            ->columnSpanFull(),
+                                    ])
+                                        ->extraAttributes(fn (Get $get): array => ['wire:key' => 'isi-surat-'.md5((string) json_encode(
+                                            app(KatalogTagSurat::class)->daftar((array) ($get('../../skemaFormFields') ?? []))
+                                        ))])
                                         ->columnSpanFull(),
 
                                     Hidden::make('status_aktif')

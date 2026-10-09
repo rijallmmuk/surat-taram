@@ -1,0 +1,4 @@
+nama *;nik *;kk_number;sex *;tempatlahir *;tanggallahir *;jorong_id;agama_id;status_kawin_id;pekerjaan_id;pendidikan_id;kewarganegaraan_id;no_hp;status_penduduk
+Andi Contoh;1307990101900011;;Laki-laki;Taram;1990-01-01;Subarang;Islam;Belum Kawin;Wiraswasta;;WNI;081200000011;Aktif
+Rina Contoh;1307990101900012;;Perempuan;Payakumbuh;1992-03-04;Gantiang;Islam;Kawin;Mengurus Rumah Tangga;;WNI;;Aktif
+Joko Salah;12345;;Laki-laki;Taram;1985-07-08;Jorong Khayalan;Islam;Kawin;Petani/Pekebun;;WNI;;Aktif
