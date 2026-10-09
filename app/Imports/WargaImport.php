@@ -12,7 +12,8 @@ use RuntimeException;
 use Throwable;
 
 /**
- * Membaca file Excel/CSV warga dan membuat tiap baris data penduduk beserta akun login.
+ * Membaca file Excel/CSV warga dan menyimpan tiap baris sebagai data penduduk. Akun login warga
+ * dibuat saat warga pertama kali masuk dengan NIK dan tanggal lahir.
  * Baris gagal tidak menggagalkan keseluruhan — dicatat di $errors per nomor baris.
  */
 class WargaImport
@@ -149,7 +150,6 @@ class WargaImport
         );
 
         $batchIdentities = [];
-        $batchAccounts = [];
         $batchBaris = [];
 
         foreach ($baris as $row) {
@@ -160,7 +160,6 @@ class WargaImport
             try {
                 $prepared = $this->service->prepareRow($data, $this->seenNik, $nikTerdaftar);
                 $batchIdentities[] = $prepared['identity'];
-                $batchAccounts[] = $prepared['account'];
                 $batchBaris[] = $this->rowNumber;
             } catch (Throwable $e) {
                 $this->errors[] = [
@@ -177,12 +176,12 @@ class WargaImport
         }
 
         try {
-            $this->imported += count($this->service->bulkInsert($batchIdentities, $batchAccounts));
+            $this->imported += $this->service->bulkInsert($batchIdentities);
         } catch (Throwable) {
             // Satu baris yang ditolak database tidak boleh menggagalkan seluruh bongkahan: simpan satu per satu.
             foreach ($batchIdentities as $indeks => $identitas) {
                 try {
-                    $this->imported += count($this->service->bulkInsert([$identitas], [$batchAccounts[$indeks]]));
+                    $this->imported += $this->service->bulkInsert([$identitas]);
                 } catch (Throwable $exception) {
                     report($exception);
                     $this->errors[] = [

@@ -12,14 +12,13 @@ use App\Models\RefStatusKawin;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 use RuntimeException;
-use Spatie\Permission\Models\Role;
 
 /**
- * Membuat identitas warga (`penduduk`) beserta akun login (`users`) dari impor Excel.
+ * Membuat identitas warga (`penduduk`) dari impor Excel. Akun login warga tidak dibuat di sini:
+ * akun dibuat saat warga pertama kali masuk dengan NIK dan tanggal lahir (WargaAuthService), sehingga
+ * impor ribuan warga tidak perlu menghitung ribuan hash kata sandi yang sengaja lambat.
  *
  * Kolom rujukan (agama_id, pendidikan_id, pekerjaan_id, status_kawin_id, jorong_id) menerima
  * angka ID mentah maupun NAMA pilihan dari dropdown.
@@ -29,12 +28,7 @@ class WargaImportService
     /** @var array<class-string<Model>, array{id: array<int, true>, nama: array<string, int>}>|null */
     private ?array $referensi = null;
 
-    private ?Role $roleWarga = null;
-
     private ?int $defaultJorongId = null;
-
-    /** @var array<string, string> Cache hash password tanggal lahir agar impor puluhan ribu baris berjalan instan */
-    private array $passwordCache = [];
 
     /**
      * Memvalidasi satu baris warga dan mengembalikan data siap simpan.
@@ -42,7 +36,7 @@ class WargaImportService
      * @param  array<string, mixed>  $row
      * @param  array<string, true>  $seenNik
      * @param  array<string, true>  $nikTerdaftar
-     * @return array{identity: array<string, mixed>, account: array<string, mixed>}
+     * @return array{identity: array<string, mixed>}
      *
      * @throws RuntimeException bila baris tidak valid
      */
@@ -114,8 +108,6 @@ class WargaImportService
         $seenNik[$nik] = true;
 
         $tglLahirStr = $tanggalLahir->toDateString();
-        $passwordPlain = $tanggalLahir->format('dmY');
-        $passwordHash = $this->passwordCache[$passwordPlain] ??= Hash::make($passwordPlain);
 
         $now = now()->toDateTimeString();
 
@@ -138,72 +130,24 @@ class WargaImportService
             'updated_at' => $now,
         ];
 
-        $account = [
-            'name' => $nama,
-            'username' => $nik,
-            'email' => null,
-            'password' => $passwordHash,
-            'role' => 'warga',
-            'penduduk_nik' => $nik,
-            'is_active' => true,
-            'created_at' => $now,
-            'updated_at' => $now,
-        ];
-
-        return [
-            'identity' => $identity,
-            'account' => $account,
-        ];
+        return ['identity' => $identity];
     }
 
     /**
-     * Menyisipkan identitas dan akun dalam jumlah besar sekaligus menggunakan batch query.
+     * Menyisipkan identitas warga dalam jumlah besar sekaligus.
      *
      * @param  list<array<string, mixed>>  $identities
-     * @param  list<array<string, mixed>>  $accounts
-     * @return list<int> ID user yang baru dibuat
+     * @return int Jumlah warga yang disimpan
      */
-    public function bulkInsert(array $identities, array $accounts): array
+    public function bulkInsert(array $identities): int
     {
         if ($identities === []) {
-            return [];
+            return 0;
         }
 
-        DB::transaction(function () use ($identities, $accounts): void {
-            Penduduk::insert($identities);
-            User::insert($accounts);
-        });
+        Penduduk::insert($identities);
 
-        $niks = array_column($identities, 'nik');
-        $userIds = User::whereIn('username', $niks)->pluck('id')->all();
-
-        $this->pasangPeranWarga($userIds);
-
-        return $userIds;
-    }
-
-    /**
-     * Pasang peran warga secara massal.
-     *
-     * @param  list<int>  $userIds
-     */
-    public function pasangPeranWarga(array $userIds): void
-    {
-        if ($userIds === []) {
-            return;
-        }
-
-        $roleId = $this->roleWarga()->getKey();
-
-        DB::table('model_has_roles')->insertOrIgnore(
-            collect($userIds)
-                ->map(fn (int $id): array => [
-                    'role_id' => $roleId,
-                    'model_type' => User::class,
-                    'model_id' => $id,
-                ])
-                ->all()
-        );
+        return count($identities);
     }
 
     /**
@@ -228,11 +172,6 @@ class WargaImportService
     private function getDefaultJorongId(): int
     {
         return $this->defaultJorongId ??= (Jorong::first()?->id ?? 1);
-    }
-
-    private function roleWarga(): Role
-    {
-        return $this->roleWarga ??= Role::firstOrCreate(['name' => 'warga', 'guard_name' => 'web']);
     }
 
     private function column(array $row, array $keys): string

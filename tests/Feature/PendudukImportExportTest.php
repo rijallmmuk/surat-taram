@@ -9,6 +9,7 @@ use App\Models\Jorong;
 use App\Models\LogAktivitas;
 use App\Models\Penduduk;
 use App\Models\User;
+use App\Services\WargaAuthService;
 use App\Services\WargaImportService;
 use App\Services\WargaTemplateBuilder;
 use Carbon\Carbon;
@@ -17,6 +18,7 @@ use Database\Seeders\NagariSeeder;
 use Database\Seeders\PendudukSeeder;
 use Database\Seeders\RoleAndUserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Hashing\HashManager;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -109,11 +111,9 @@ test('warga import service creates penduduk, no kk, and user login account with 
         ->and($prepared['identity']['kk_number'])->toBe($testKk)
         ->and($prepared['identity']['nama'])->toBe('Budi Santoso')
         ->and($prepared['identity']['jenis_kelamin'])->toBe('L')
-        ->and($prepared['account']['username'])->toBe($testNik);
+        ->and($prepared)->not->toHaveKey('account');
 
-    $userIds = $service->bulkInsert([$prepared['identity']], [$prepared['account']]);
-
-    expect($userIds)->not->toBeEmpty();
+    expect($service->bulkInsert([$prepared['identity']]))->toBe(1);
 
     $createdPenduduk = Penduduk::where('nik', $testNik)->first();
     expect($createdPenduduk)->not->toBeNull()
@@ -121,10 +121,12 @@ test('warga import service creates penduduk, no kk, and user login account with 
         ->and($createdPenduduk->kk_number)->toBe($testKk)
         ->and($createdPenduduk->alamat)->toBe('Jorong Balai Cubadak, Nagari Taram');
 
-    $createdUser = User::where('username', $testNik)->first();
-    expect($createdUser)->not->toBeNull()
-        ->and($createdUser->role)->toBe('warga')
-        ->and($createdUser->hasRole('warga'))->toBeTrue()
+    // Akun login tidak dibuat saat impor (menghindari ribuan hash sandi); akun dibuat saat warga pertama kali masuk.
+    expect(User::where('username', $testNik)->exists())->toBeFalse();
+
+    $createdUser = app(WargaAuthService::class)->provisionForLogin($testNik, '01011995');
+    expect($createdUser->role)->toBe('warga')
+        ->and($createdUser->penduduk_nik)->toBe($testNik)
         ->and(Hash::check('01011995', $createdUser->password))->toBeTrue();
 });
 
@@ -217,7 +219,7 @@ test('optional reference fields stay empty through import and export', function 
         ->and($prepared['identity']['ref_pendidikan_id'])->toBeNull()
         ->and($prepared['identity']['ref_kewarganegaraan_id'])->toBeNull();
 
-    $service->bulkInsert([$prepared['identity']], [$prepared['account']]);
+    $service->bulkInsert([$prepared['identity']]);
     $sheet = (new WargaExport)->build()->getSheetByName('Data Warga');
     $headings = array_map(fn (string $heading): string => Str::slug($heading, '_'), app(WargaTemplateBuilder::class)->headings());
     $exportedRow = null;
@@ -288,15 +290,12 @@ test('warga import reads opensid 43-column format including pns and jorong alias
         ->and($prepared['identity']['ref_pendidikan_id'])->toBe(5)
         ->and($prepared['identity']['ref_status_kawin_id'])->toBe(2)
         ->and($prepared['identity']['ref_kewarganegaraan_id'])->toBe(1)
-        ->and($prepared['identity']['jorong_id'])->toBe(Jorong::where('nama_jorong', 'Balai Cubadak')->value('id')) // Balai Cubadak
-        ->and($prepared['account']['password'])->not->toBeEmpty();
+        ->and($prepared['identity']['jorong_id'])->toBe(Jorong::where('nama_jorong', 'Balai Cubadak')->value('id')); // Balai Cubadak
 
-    $userIds = $service->bulkInsert([$prepared['identity']], [$prepared['account']]);
-    expect($userIds)->toHaveCount(1);
+    expect($service->bulkInsert([$prepared['identity']]))->toBe(1);
 
-    $user = User::where('username', '1307051103660002')->first();
-    expect($user)->not->toBeNull()
-        ->and(Hash::check('11031966', $user->password))->toBeTrue();
+    $user = app(WargaAuthService::class)->provisionForLogin('1307051103660002', '11031966');
+    expect(Hash::check('11031966', $user->password))->toBeTrue();
 });
 
 test('warga import handles fallback for dash dusun and rejects an empty birth place instead of inventing one', function () {
@@ -548,8 +547,10 @@ test('master file penduduk_19_07_2026.xlsx has 3 sheets and validates with 0 err
             $cells = $row->toArray();
 
             if ($rowNumber === 1) {
-                expect($cells)->toBe(app(WargaTemplateBuilder::class)->headings());
+                // Berkas lama memakai 13 kolom tanpa tanda bintang; semua kolomnya tetap dikenali template impor.
                 $headings = array_map(fn (string $heading): string => Str::slug($heading, '_'), $cells);
+                $kolomTemplate = array_map(fn (string $heading): string => Str::slug($heading, '_'), app(WargaTemplateBuilder::class)->headings());
+                expect(array_diff($headings, $kolomTemplate))->toBe([]);
 
                 continue;
             }
@@ -719,6 +720,17 @@ test('import menolak nama warga yang diawali tanda formula', function () {
     ], $seen, []))->toThrow(RuntimeException::class, 'tidak boleh diawali');
 });
 
+test('import menerima tempat lahir berisi tanda strip saja sebagai pengisi data yang tidak diketahui', function () {
+    $seen = [];
+
+    $prepared = app(WargaImportService::class)->prepareRow(barisWargaLengkap(['tempatlahir' => '-']), $seen, []);
+
+    expect($prepared['identity']['tempat_lahir'])->toBe('-');
+
+    expect(fn () => app(WargaImportService::class)->prepareRow(barisWargaLengkap(['nik' => '1307990404949004', 'tempatlahir' => '-1+2']), $seen, []))
+        ->toThrow(RuntimeException::class, 'tidak boleh diawali');
+});
+
 /**
  * @param  array<string, mixed>  $ubah
  * @return array<string, mixed>
@@ -779,7 +791,7 @@ test('status penduduk ikut terekspor dan terimpor kembali tanpa berubah', functi
     $service = app(WargaImportService::class);
     $seen = [];
     $prepared = $service->prepareRow(barisWargaLengkap(['status_penduduk' => 'Meninggal']), $seen, []);
-    $service->bulkInsert([$prepared['identity']], [$prepared['account']]);
+    $service->bulkInsert([$prepared['identity']]);
 
     expect(Penduduk::findOrFail('1307050101990070')->status_penduduk)->toBe('meninggal')
         ->and(fn () => $service->prepareRow(barisWargaLengkap(['nik' => '1307050101990074', 'status_penduduk' => 'Hilang']), $seen, []))
@@ -818,13 +830,13 @@ test('impor CSV bertitik koma dari Excel berbahasa Indonesia terbaca, sedangkan 
 test('satu baris yang ditolak database tidak menggagalkan baris lain dalam bongkahan yang sama', function () {
     $service = new class extends WargaImportService
     {
-        public function bulkInsert(array $identities, array $accounts): array
+        public function bulkInsert(array $identities): int
         {
             if (in_array('1307050101990077', array_column($identities, 'nik'), true)) {
                 throw new RuntimeException('Ditolak database.');
             }
 
-            return parent::bulkInsert($identities, $accounts);
+            return parent::bulkInsert($identities);
         }
     };
     $import = new WargaImport($service);
@@ -860,4 +872,19 @@ test('impor dari halaman Data Penduduk menyimpan baris benar, melaporkan baris s
     Livewire::test(ListPenduduks::class)
         ->callAction('imporExcel', ['file' => UploadedFile::fake()->createWithContent('warga.xls', 'bukan xlsx')])
         ->assertNotified('Impor gagal diproses');
+});
+
+test('impor ribuan warga tidak menghitung hash kata sandi, dan warga hasil impor langsung dapat masuk dengan NIK dan tanggal lahir', function () {
+    Hash::spy();
+    $import = new WargaImport(app(WargaImportService::class));
+    $import->collection(collect(range(1, 600))->map(fn (int $i) => collect([
+        ...barisWargaLengkap(['nik' => '13079902'.str_pad((string) $i, 8, '0', STR_PAD_LEFT), 'tanggallahir' => '1980-01-'.str_pad((string) ($i % 28 + 1), 2, '0', STR_PAD_LEFT)]),
+        '__row_number' => $i + 1,
+    ])));
+
+    expect($import->imported)->toBe(600);
+    Hash::shouldNotHaveReceived('make');
+    Hash::swap(new HashManager(app()));
+
+    expect(app(WargaAuthService::class)->provisionForLogin('1307990200000001', '02011980')->penduduk_nik)->toBe('1307990200000001');
 });

@@ -767,3 +767,9 @@ Lihat status aktif di awal dokumen, keputusan terbaru #109–#110 pada `DECISION
 - Simulasi instalasi produksi dari nol di MySQL (`migrate` + `db:seed` APP_ENV=production): 3 akun, 0 penduduk, 6 surat aktif + 2 rancangan, stempel dan tanda tangan terpasang; `app:cek-deploy` hijau kecuali batas php.ini laptop (diatur di hPanel). Paket hosting diuji.
 - Suite: 436 test lulus di SQLite (6 khusus MariaDB dilewati) dan MariaDB (1 dilewati); `composer audit` dan `npm audit` tanpa temuan; `npm run build` berhasil.
 
+
+## Impor warga tidak lagi macet — 9 Oktober 2026
+
+- Penyebab "Mulai Impor" berputar tanpa henti: impor membuat akun warga dan menghitung bcrypt untuk setiap tanggal lahir unik (±300 ms × 6.505 tanggal ≈ 33 menit). Impor kini hanya menyimpan data penduduk; akun warga dibuat saat login pertama yang cocok (`WargaAuthService::provisionForLogin`, alur yang sudah ada). Berkas asli 8.165 baris selesai dalam ±7 detik.
+- Tempat lahir berisi tanda `-` saja (pengisi "tidak diketahui" di data kependudukan) diterima; teks yang diawali `-` lalu karakter lain tetap ditolak sebagai formula.
+- Test berkas master menyesuaikan judul kolom lama (13 kolom tanpa tanda bintang) dan kini lulus 0 baris bermasalah.

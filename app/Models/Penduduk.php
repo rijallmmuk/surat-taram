@@ -51,9 +51,10 @@ class Penduduk extends Model
 
     /**
      * Teks identitas tidak boleh diawali =, +, -, @ (dibaca sebagai formula di spreadsheet)
-     * atau memuat < dan > (tag HTML yang ikut tercetak di surat).
+     * atau memuat < dan > (tag HTML yang ikut tercetak di surat). Tanda "-" sendirian
+     * (pengisi "tidak diketahui" di data kependudukan) tetap boleh.
      */
-    public const POLA_TEKS_TIDAK_AMAN = '/^[=+\-@]|[<>]/';
+    public const POLA_TEKS_TIDAK_AMAN = '/^[=+\-@].|[<>]/s';
 
     public const PESAN_TEKS_TIDAK_AMAN = 'tidak boleh diawali tanda =, +, -, @ atau memuat tanda < dan >.';
 

@@ -73,7 +73,7 @@ class ListPenduduks extends ListRecords
             ->visible(fn (): bool => in_array(auth()->user()?->role, ['superadmin', 'admin', 'sekretaris'], true))
             ->authorize(fn (): bool => in_array(auth()->user()?->role, ['superadmin', 'admin', 'sekretaris'], true))
             ->modalHeading('Impor Warga dari Excel')
-            ->modalDescription('Setiap baris membuat identitas penduduk dan satu akun login warga. Berkas puluhan ribu baris membutuhkan beberapa menit; jangan menutup atau memuat ulang halaman selama proses berjalan.')
+            ->modalDescription('Setiap baris disimpan sebagai data penduduk. Warga dapat langsung masuk dengan NIK dan tanggal lahir (DDMMYYYY); akun loginnya dibuat otomatis saat pertama kali masuk. Jangan menutup atau memuat ulang halaman selama proses berjalan.')
             ->modalSubmitActionLabel('Mulai Impor')
             ->modalCancelActionLabel('Batalkan')
             ->modalCloseButton(false)
@@ -157,7 +157,7 @@ class ListPenduduks extends ListRecords
                 if ($import->errors === []) {
                     Notification::make()
                         ->title('Impor selesai')
-                        ->body("{$import->imported} warga beserta akun login berhasil ditambahkan.")
+                        ->body("{$import->imported} warga berhasil ditambahkan. Mereka dapat masuk dengan NIK dan tanggal lahir.")
                         ->success()
                         ->send();
 

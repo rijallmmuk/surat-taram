@@ -117,7 +117,7 @@ def bab_sekretaris(a):
         p('Tombol <span class="tbl">Impor / Ekspor</span> berisi tiga pilihan:'),
         tabel(['Pilihan', 'Kegunaan'], [
             ['Unduh Template', 'Mengunduh berkas Excel kosong berisi kolom yang benar, daftar pilihan (dropdown), dan petunjuk pengisian.'],
-            ['Impor dari Excel', 'Menambah banyak penduduk sekaligus dari berkas .xlsx atau .csv (maksimal 15 MB). Setiap baris juga membuat akun login warga.'],
+            ['Impor dari Excel', 'Menambah banyak penduduk sekaligus dari berkas .xlsx atau .csv (maksimal 15 MB). Ribuan baris selesai dalam hitungan detik. Warga hasil impor langsung dapat masuk dengan NIK dan tanggal lahir; akun loginnya dibuat otomatis saat pertama kali masuk.'],
             ['Ekspor Data Excel', 'Mengunduh seluruh data penduduk dalam format yang sama dengan template, sehingga dapat diimpor kembali ke sistem baru.'],
         ]),
         gambar('a02-menu-impor-ekspor.png', 'Menu Impor / Ekspor'),
