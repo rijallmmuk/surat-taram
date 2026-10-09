@@ -161,3 +161,19 @@ test('aset resmi tidak menimpa stempel atau tanda tangan yang sudah diunggah lew
     expect(Nagari::query()->first()->stempel_path)->toBe('nagari-assets/lama.png')
         ->and(Storage::disk('local')->get($wali->file_tanda_tangan_path))->toBe('ttd baru');
 });
+
+test('tautan halaman memakai https dan domain proxy hanya bila proxy tepercaya', function (?string $proxy, bool $memakaiDomainProxy) {
+    config(['trustedproxy.proxies' => $proxy]);
+
+    $response = $this->withServerVariables(['REMOTE_ADDR' => '127.0.0.1'])
+        ->withHeaders(['X-Forwarded-Proto' => 'https', 'X-Forwarded-Host' => 'contoh.ngrok-free.app', 'X-Forwarded-Port' => '443'])
+        ->get('/panel/login')
+        ->assertOk();
+
+    $memakaiDomainProxy
+        ? $response->assertSee('href="https://contoh.ngrok-free.app/css/', false)->assertDontSee('href="http://localhost', false)
+        : $response->assertDontSee('contoh.ngrok-free.app', false);
+})->with([
+    'lewat ngrok' => ['127.0.0.1', true],
+    'tanpa proxy' => [null, false],
+]);
