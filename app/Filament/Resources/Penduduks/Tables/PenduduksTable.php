@@ -73,8 +73,9 @@ class PenduduksTable
                 TextColumn::make('akses_login')
                     ->label('Login warga')
                     ->state(function (Penduduk $record): string {
+                        // Akun warga dibuat saat login pertama, jadi warga tanpa akun bukan masalah.
                         if ($record->user === null) {
-                            return 'Akun bermasalah';
+                            return 'Belum pernah masuk';
                         }
 
                         if ($record->user->role !== 'warga') {

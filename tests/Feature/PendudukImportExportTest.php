@@ -888,3 +888,14 @@ test('impor ribuan warga tidak menghitung hash kata sandi, dan warga hasil impor
 
     expect(app(WargaAuthService::class)->provisionForLogin('1307990200000001', '02011980')->penduduk_nik)->toBe('1307990200000001');
 });
+
+test('warga hasil impor yang belum pernah masuk tidak ditandai bermasalah di daftar penduduk', function () {
+    $seen = [];
+    $prepared = app(WargaImportService::class)->prepareRow(barisWargaLengkap(), $seen, []);
+    app(WargaImportService::class)->bulkInsert([$prepared['identity']]);
+    $penduduk = Penduduk::findOrFail('1307050101990070');
+    $this->actingAs($this->admin);
+
+    Livewire::test(ListPenduduks::class)
+        ->assertTableColumnStateSet('akses_login', 'Belum pernah masuk', $penduduk);
+});
