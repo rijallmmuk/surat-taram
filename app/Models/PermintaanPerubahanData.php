@@ -22,6 +22,7 @@ class PermintaanPerubahanData extends Model
         'diajukan_oleh_user_id',
         'data_lama',
         'data_baru',
+        'dokumen_pendukung_path',
         'alasan',
         'status',
         'catatan_sekretaris',

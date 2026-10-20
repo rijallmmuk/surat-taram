@@ -14,15 +14,14 @@ def tentang_buku(a):
         ['Admin Nagari', 'Bab 1, Bab 2, Bab 4, Bab 6 (Panduan Admin), dan Bab 7 (Builder Jenis Surat)'],
     ])}
 <h3>Cara membaca gambar</h3>
-{p('Gambar di buku ini diambil langsung dari aplikasi. Bagian yang perlu Anda perhatikan diberi <b>kotak merah bernomor</b>. Nomor pada gambar sama dengan urutan langkah di teks.')}
+{p('Gambar di buku ini diambil langsung dari aplikasi. Sebagian gambar diberi <b>kotak merah bernomor</b> untuk menunjukkan isian atau tombol yang dijelaskan. Gambar detail memperbesar bagian penting agar mudah dibaca saat dicetak. Ikuti urutan langkah pada teks; tampilan HP dan komputer dapat berbeda letaknya.')}
 {p('Nama tombol ditulis seperti ini: <span class="tbl">Selanjutnya</span>. Nama menu ditulis seperti ini: <span class="mn">Pengajuan Surat</span>.')}
 <h3>Kotak keterangan</h3>
-{kotak('penting', '<p>Hal yang wajib diperhatikan supaya tidak terjadi kesalahan.</p>')}
-{kotak('tips', '<p>Cara yang lebih cepat atau lebih mudah.</p>')}
-{kotak('catatan', '<p>Penjelasan tambahan.</p>')}
+{p('<b>Penting</b> menunjukkan ketentuan yang harus diperhatikan. <b>Tips</b> berisi saran penggunaan. <b>Catatan</b> memberi penjelasan tambahan.')}
 <h3>Tentang data di gambar</h3>
-{p('Semua nama, NIK, dokumen, stempel, dan tanda tangan pada gambar adalah <b>data contoh</b> yang dibuat khusus untuk buku ini dan bertanda <b>CONTOH</b>. Stempel dan tanda tangan resmi Wali Nagari tidak dimuat di buku ini.')}
+{p('Data warga pada gambar adalah <b>data contoh</b>. Dokumen dan cap contoh diberi tulisan <b>CONTOH</b>. Stempel serta tanda tangan resmi Wali Nagari tidak dimuat di buku ini. Lambang daerah dan identitas instansi mengikuti tampilan aplikasi.')}
 {p('Alamat website layanan disebut <b>alamat website layanan surat Nagari Taram</b>. Tanyakan alamat lengkapnya kepada petugas Nagari atau lihat pengumuman resmi Nagari.')}
+{p('Edisi diperbarui pada <b>12 Oktober 2026</b>. Buku disusun untuk cetak A4 satu sisi, dengan margin kiri 25 mm untuk penjilidan. Cetak pada ukuran asli (100%); sampul depan dan belakang terdapat pada halaman pertama dan terakhir.')}
 </section>'''
 
 
@@ -53,7 +52,6 @@ def bab_pengenalan(a):
             ['<b>Wali Nagari</b>', 'Meninjau, menandatangani, dan menerbitkan surat; mengembalikan surat ke petugas bila perlu diperbaiki.', 'Antrean Tanda Tangan, Arsip, Rekap, Data Penduduk (lihat), Data Jorong'],
             ['<b>Admin Nagari</b>', 'Semua tugas Sekretaris, ditambah membuat dan mengubah jenis surat (Builder Jenis Surat), mengelola pejabat dan akunnya, impor/ekspor data penduduk, dan melihat log aktivitas.', 'Semua menu Sekretaris, Builder Jenis Surat, Pejabat Nagari, Log Aktivitas'],
         ]),
-        kotak('catatan', p('Ada juga peran <b>Superadmin</b> (pemilik sistem) yang mengelola akun Admin dan data referensi seperti daftar agama dan pekerjaan. Peran ini tidak dibahas di buku ini.')),
         sub('1.3', 'Alur pelayanan surat'),
         p('Semua surat melalui empat tahap berikut. Pengajuan yang diinput petugas untuk warga yang datang ke kantor langsung melewati tahap 2.'),
         alur,
@@ -79,7 +77,7 @@ def bab_pengenalan(a):
             ['Surat Keterangan Usaha', 'Nama usaha dan lokasi usaha', 'KTP, Kartu Keluarga, foto tempat usaha (opsional)'],
             ['Surat Keterangan (perbedaan data)', 'Nomor buku nikah dan rincian perbedaan data KK dengan buku nikah', 'KTP, Kartu Keluarga, Buku Nikah'],
             ['Surat Keterangan Kematian', 'Data almarhum, tanggal, sebab, dan tempat meninggal', 'KTP pelapor, KK almarhum, surat keterangan medis (opsional)'],
-            ['Surat Keterangan Penghasilan', 'Penghasilan per bulan, keperluan, dan daftar tanggungan keluarga', 'KTP, Kartu Keluarga'],
+            ['Surat Keterangan Penghasilan', 'Penghasilan per bulan, keperluan, dan daftar tanggungan keluarga', 'KTP, Kartu Keluarga, Slip Gaji / Bukti Penghasilan (boleh surat pernyataan penghasilan pengganti)'],
             ['Surat Keterangan Tidak Mampu', 'Keperluan, data ayah dan/atau ibu', 'KTP orang tua / pemohon, Kartu Keluarga'],
             ['Surat Keterangan Domisili', 'Tidak ada pertanyaan tambahan', 'KTP, Kartu Keluarga'],
         ]),
@@ -148,16 +146,17 @@ def bab_memulai(a):
         p('Ikon <b>lonceng</b> di kanan atas menampilkan pemberitahuan, misalnya pengajuan yang sudah diverifikasi, ditolak, atau diterbitkan. Angka di lonceng menunjukkan jumlah pemberitahuan yang belum dibaca.'),
         h3('Menu akun'),
         p('Tekan lingkaran berisi inisial nama Anda di kanan atas. Pilih <span class="mn">Profil Saya</span> untuk melihat data akun dan mengganti kata sandi, atau <span class="mn">Keluar</span> untuk keluar dari aplikasi.'),
-        gambar2('w03-menu-akun-hp.png', 'Menu akun: Profil Saya dan Keluar', 'w15-notifikasi-terbit-hp.png', 'Isi notifikasi setelah surat terbit'),
         kotak('penting', p('Selalu tekan <b>Keluar</b> bila memakai komputer atau HP milik orang lain, misalnya komputer di kantor Nagari.')),
+        gambar2('w03-menu-akun-hp.png', 'Menu akun: Profil Saya dan Keluar', 'w15-notifikasi-terbit-hp.png', 'Isi notifikasi setelah surat terbit'),
         sub('2.6', 'Mengganti kata sandi'),
-        p('Semua pengguna dapat mengganti kata sandinya sendiri. Kata sandi baru minimal <b>8 karakter</b>. Aplikasi akan mengingatkan bila Anda masih memakai sandi awal, tetapi tidak memaksa.'),
+        p('Semua pengguna dapat mengganti kata sandinya sendiri. Kata sandi baru minimal <b>8 karakter</b>. Aplikasi akan mengingatkan bila Anda masih memakai sandi awal, tetapi tidak memaksa. Penggantian sandi <b>tidak memerlukan persetujuan Sekretaris Nagari</b>.'),
         gambar('w04b-profil-sandi-hp.png', 'Bagian Keamanan &amp; Kata Sandi di halaman profil', 'hp'),
         langkah('Buka menu akun (inisial nama di kanan atas), lalu pilih <span class="mn">Profil Saya</span>.',
                 'Gulir ke bagian <b>Keamanan &amp; Kata Sandi</b>.',
                 'Isi <b>Kata Sandi Saat Ini</b>. Warga yang masih memakai sandi awal mengisi tanggal lahir DDMMYYYY.',
                 'Isi <b>Kata Sandi Baru</b> dan ulangi pada <b>Konfirmasi Kata Sandi Baru</b>.',
                 'Tekan <span class="tbl">Simpan Kata Sandi</span> (warga) atau <span class="tbl">Simpan Perubahan</span> (petugas).'),
+        p('Setelah berhasil disimpan, gunakan sandi baru saat masuk berikutnya. Jika sandi saat ini salah atau konfirmasi tidak sama, perbaiki kolom yang diberi pesan kesalahan lalu simpan kembali. Jika lupa sandi saat ini, hubungi petugas untuk reset setelah identitas diperiksa.'),
         kotak('tips', p('Pakai kata sandi yang mudah Anda ingat tetapi sulit ditebak orang lain. Jangan memakai tanggal lahir, NIK, atau nomor HP sebagai kata sandi baru.')),
         akhir(),
     ])
@@ -229,7 +228,10 @@ def bab_warga(a):
             ['Berkas yang sudah tersimpan', 'Berkas yang pernah Anda unggah pada pengajuan sebelumnya dipakai lagi otomatis dan bertulisan <b>Sudah Tersimpan di Sistem</b>. Unggah berkas baru hanya bila dokumennya berubah.'],
             ['Menghapus berkas', 'Tekan tanda silang (×) pada berkas yang terunggah, lalu unggah berkas yang benar.'],
         ]),
-        kotak('tips', p('Foto berkas di tempat yang terang, tidak miring, dan pastikan semua tulisan terbaca jelas. Berkas yang buram adalah alasan penolakan yang paling sering.')),
+        h3('Khusus Surat Keterangan Penghasilan'),
+        p('Selain KTP dan KK, unggah <b>Slip Gaji / Bukti Penghasilan</b>. Jika Anda tidak mempunyai slip gaji, gunakan bukti penghasilan lain atau surat pernyataan penghasilan pengganti. Dokumen ini wajib untuk pengajuan online dan akan diperiksa petugas. Pastikan angka penghasilan yang Anda tulis sesuai dengan bukti yang dilampirkan.'),
+        gambar('w27-syarat-penghasilan.jpg', 'Berkas Slip Gaji / Bukti Penghasilan wajib pada pengajuan Surat Keterangan Penghasilan', 'hp'),
+        kotak('tips', p('Foto berkas di tempat yang terang, tidak miring, dan pastikan semua tulisan terbaca jelas. Dokumen yang buram dapat diminta untuk diunggah ulang.')),
         h3('Memeriksa dan mengirim'),
         p('Gulir ke bawah sampai bagian <b>Periksa sebelum mengirim</b>. Bagian ini merangkum jenis surat, data pemohon, jawaban Anda, dan status setiap berkas.'),
         langkah('Periksa semua isian. Jika ada yang salah, tekan <span class="tbl">Kembali</span> untuk memperbaikinya.',
@@ -268,11 +270,21 @@ def bab_warga(a):
         p('Gunakan fitur ini bila data diri Anda salah atau belum lengkap, misalnya nomor KK belum terisi atau ejaan nama keliru. Data resmi baru berubah setelah petugas Nagari menyetujui permintaan Anda.'),
         langkah('Buka menu <span class="mn">Perubahan Data Diri</span>, lalu tekan <span class="tbl">Ajukan Perubahan Data</span>. Anda juga dapat menekan tombol yang sama di Profil Saya.',
                 'Formulir terisi dengan data resmi Anda. Ubah <b>hanya</b> bagian yang keliru atau kosong.',
+                'Gulir ke <b>Dokumen pendukung</b>. Unggah bukti pada <b>Bukti perubahan data</b> bila Anda mengubah atau melengkapi data selain nomor HP.',
+                'Tunggu unggahan selesai. Periksa kembali data baru dan dokumennya.',
                 'Tekan <span class="tbl">Kirim permintaan perubahan</span>.',
                 'Permintaan tampil dengan status <b>Menunggu petugas</b>. Pantau keputusannya di menu yang sama.'),
-        gambar2('w24-perubahan-data-form-hp.png', 'Formulir perubahan data diri', 'w25-perubahan-data-isi-hp.png', 'Contoh: nomor KK diisi'),
+        gambar2('w24-perubahan-data-form-hp.png', 'Data diri yang dapat diperbaiki', 'w25-perubahan-data-isi-hp.jpg', 'Contoh: nomor KK diubah'),
+        gambar('w28-bukti-perubahan-data.jpg', 'Bagian Dokumen pendukung untuk membuktikan data baru', 'hp'),
+        tabel(['Yang diubah', 'Dokumen yang disiapkan'], [
+            ['Data resmi, termasuk data yang sebelumnya kosong', 'Wajib bukti yang sesuai, misalnya KTP, KK, atau dokumen resmi lain. Contoh: perubahan nomor KK dibuktikan dengan KK yang memuat nomor baru.'],
+            ['Hanya nomor HP / WhatsApp', 'Dokumen boleh tidak diunggah. Permintaan tetap diperiksa petugas sebelum nomor pada data resmi berubah.'],
+            ['Nomor HP sekaligus data resmi lain', 'Dokumen tetap wajib karena ada perubahan selain nomor HP.'],
+            ['Beberapa halaman bukti', 'Gabungkan menjadi satu PDF. Aplikasi menerima satu berkas PDF, JPG, atau PNG, maksimal 5 MB.'],
+        ]),
         gambar('w26-perubahan-data-terkirim-hp.png', 'Permintaan perubahan menunggu pemeriksaan petugas', 'hp'),
-        kotak('penting', p('Permintaan yang tidak mengubah satu data pun akan ditolak sistem. Jika petugas menolak permintaan, alasannya tercantum pada permintaan tersebut. Perbaiki lalu ajukan lagi.')),
+        p('Buka rincian permintaan untuk melihat nilai lama, usulan baru, dokumen pendukung, dan hasil pemeriksaan. Jika disetujui, periksa data terbaru di <span class="mn">Profil Saya</span>. Jika ditolak, baca alasannya, siapkan perbaikan, lalu ajukan permintaan baru.'),
+        kotak('penting', p('Permintaan yang tidak mengubah satu data pun akan ditolak sistem. Selama satu permintaan masih menunggu, Anda belum dapat membuat permintaan perubahan lain. Perubahan ini tidak memperbarui PDF surat yang sudah terbit; untuk surat tersebut hubungi petugas.')),
         sub('3.11', 'Pertanyaan yang sering diajukan warga'),
         tabel(['Pertanyaan', 'Jawaban'], [
             ['Berapa lama surat selesai?', 'Tergantung antrean pemeriksaan dan jadwal Wali Nagari. Pantau statusnya di menu Pengajuan Surat; Anda juga menerima notifikasi setiap kali status berubah.'],
@@ -282,6 +294,8 @@ def bab_warga(a):
             ['Kenapa jenis surat tidak bisa dipilih?', 'Anda masih mempunyai pengajuan jenis yang sama yang sedang diproses.'],
             ['Data di surat salah.', 'Ajukan perubahan data diri. Untuk surat yang sudah terbit, hubungi petugas Nagari.'],
             ['Berkas gagal diunggah.', 'Pastikan formatnya JPG, PNG, atau PDF dan ukurannya tidak lebih dari 5 MB. Coba foto ulang dengan resolusi lebih kecil.'],
+            ['Saya tidak mempunyai slip gaji.', 'Untuk Surat Keterangan Penghasilan, unggah bukti penghasilan lain atau surat pernyataan penghasilan pengganti.'],
+            ['Apakah perlu mendaftar sendiri?', 'Tidak ada formulir registrasi mandiri. Gunakan NIK yang sudah tercatat di data penduduk Nagari dan sandi awal tanggal lahir. Bila NIK belum tercatat, hubungi petugas dengan membawa KTP/KK.'],
         ]),
         akhir(),
     ])

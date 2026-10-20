@@ -11,6 +11,10 @@ if (! is_file($basePath.'/bootstrap/app.php')) {
     $basePath .= '/surat-taram-app';
 }
 
+if (! is_file($basePath.'/bootstrap/app.php')) {
+    $basePath = dirname(__DIR__, 2).'/surat-taram-app';
+}
+
 // Determine if the application is in maintenance mode...
 if (file_exists($maintenance = $basePath.'/storage/framework/maintenance.php')) {
     require $maintenance;

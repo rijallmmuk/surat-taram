@@ -7,6 +7,7 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class JenisSuratsTable
 {
@@ -17,11 +18,12 @@ class JenisSuratsTable
             ->defaultSort('urutan_tampil', 'asc')
             ->columns([
                 TextColumn::make('row_number')->label('No')->rowIndex()->alignCenter(),
-                TextColumn::make('nama_surat')
+                TextColumn::make('nama_layanan_tampil')
                     ->label('Nama Jenis Surat')
                     ->weight('bold')
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(['nama_layanan', 'nama_surat'])
+                    ->sortable(query: fn (Builder $query, string $direction): Builder => $query
+                        ->orderByRaw("COALESCE(NULLIF(nama_layanan, ''), nama_surat) {$direction}")),
                 TextColumn::make('kode_klasifikasi')
                     ->label('Klasifikasi'),
                 TextColumn::make('kode_unit')

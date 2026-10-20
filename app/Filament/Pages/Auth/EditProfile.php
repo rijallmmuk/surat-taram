@@ -220,7 +220,7 @@ class EditProfile extends BaseEditProfile
                         ->label('Gambar tanda tangan')
                         ->helperText('Unggah PNG berlatar transparan atau JPG, maksimal 5 MB.')
                         ->image()
-                        ->acceptedFileTypes(['image/png', 'image/jpeg'])
+                        ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/jpg', 'image/pjpeg'])
                         ->maxSize(5120)
                         ->disk('local')
                         ->directory('tanda-tangan')

@@ -12,12 +12,19 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Validation\Rules\Password;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
     use CatatAudit, HasFactory, HasRoles, Notifiable;
+
+    public const VERIFIKASI_MENUNGGU = 'menunggu';
+
+    public const VERIFIKASI_TERVERIFIKASI = 'terverifikasi';
+
+    public const VERIFIKASI_DITOLAK = 'ditolak';
 
     /**
      * The attributes that are mass assignable.
@@ -33,6 +40,10 @@ class User extends Authenticatable implements FilamentUser
         'role',
         'penduduk_nik',
         'is_active',
+        'status_verifikasi',
+        'diverifikasi_oleh_user_id',
+        'diverifikasi_at',
+        'catatan_verifikasi',
     ];
 
     /**
@@ -57,16 +68,32 @@ class User extends Authenticatable implements FilamentUser
             'password' => 'hashed',
             'password_changed_at' => 'datetime',
             'is_active' => 'boolean',
+            'diverifikasi_at' => 'datetime',
         ];
     }
 
     public function canAccessPanel(Panel $panel): bool
     {
-        if (! $this->is_active) {
+        if (! $this->is_active || ! $this->isTerverifikasi()) {
             return false;
         }
 
         return in_array($this->role, ['superadmin', 'admin', 'sekretaris', 'wali_nagari', 'warga'], true);
+    }
+
+    public function isTerverifikasi(): bool
+    {
+        return ($this->status_verifikasi ?? self::VERIFIKASI_TERVERIFIKASI) === self::VERIFIKASI_TERVERIFIKASI;
+    }
+
+    public function isMenungguVerifikasi(): bool
+    {
+        return $this->status_verifikasi === self::VERIFIKASI_MENUNGGU;
+    }
+
+    public function isDitolakVerifikasi(): bool
+    {
+        return $this->status_verifikasi === self::VERIFIKASI_DITOLAK;
     }
 
     public function isSuperadmin(): bool
@@ -97,6 +124,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->belongsTo(Penduduk::class, 'penduduk_nik', 'nik');
     }
 
+    public function diverifikasiOleh(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'diverifikasi_oleh_user_id');
+    }
+
     public function pejabatNagari(): HasOne
     {
         return $this->hasOne(PejabatNagari::class, 'user_id');
@@ -104,6 +136,10 @@ class User extends Authenticatable implements FilamentUser
 
     protected static function booted(): void
     {
+        static::creating(function (User $user): void {
+            $user->status_verifikasi ??= self::VERIFIKASI_TERVERIFIKASI;
+        });
+
         static::saving(function (User $user): void {
             if ($user->exists && $user->isDirty('password') && ! $user->isDirty('password_changed_at')) {
                 $user->password_changed_at = null;
@@ -112,7 +148,11 @@ class User extends Authenticatable implements FilamentUser
 
         static::saved(function (User $user): void {
             if ($user->role && ($user->wasRecentlyCreated || $user->wasChanged('role'))) {
-                $user->syncRoles([$user->role]);
+                $role = Role::firstOrCreate([
+                    'name' => $user->role,
+                    'guard_name' => 'web',
+                ]);
+                $user->syncRoles([$role]);
             }
         });
     }

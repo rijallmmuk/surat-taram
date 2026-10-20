@@ -16,6 +16,10 @@ class TambahHeaderKeamanan
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
+        if (! $request->is('/') && ! $request->is('sitemap.xml')) {
+            $response->headers->set('X-Robots-Tag', 'noindex');
+        }
+
         if ($request->isSecure()) {
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
         }

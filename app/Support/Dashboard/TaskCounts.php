@@ -2,6 +2,7 @@
 
 namespace App\Support\Dashboard;
 
+use App\Models\PendaftaranAkunWarga;
 use App\Models\PengajuanSurat;
 use App\Models\PermintaanPerubahanData;
 use App\Models\User;
@@ -21,6 +22,8 @@ class TaskCounts
             'surat_terbit' => 0,
             'diterbitkan_hari_ini' => 0,
             'akun_admin_aktif' => 0,
+            'pendaftaran_akun' => 0,
+            'akun_warga_menunggu' => 0,
             'data_belum_lengkap' => 0,
         ];
 
@@ -52,6 +55,8 @@ class TaskCounts
         if (in_array($user->role, ['admin', 'sekretaris', 'superadmin'], true)) {
             $counts['verifikasi'] = PengajuanSurat::query()->where('status', 'diajukan')->count();
             $counts['perubahan_data'] = PermintaanPerubahanData::query()->where('status', 'menunggu')->count();
+            $counts['pendaftaran_akun'] = PendaftaranAkunWarga::query()->where('status', PendaftaranAkunWarga::STATUS_MENUNGGU)->count();
+            $counts['akun_warga_menunggu'] = $counts['pendaftaran_akun'];
         }
 
         if (in_array($user->role, ['admin', 'sekretaris', 'wali_nagari', 'superadmin'], true)) {

@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Penduduks\Tables;
 
 use App\Filament\Actions\DeleteWithReasonAction;
 use App\Models\Penduduk;
+use App\Models\User;
 use App\Services\AuditLogService;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -14,6 +15,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
@@ -48,9 +50,7 @@ class PenduduksTable
                     ->visibleFrom('md'),
                 TextColumn::make('status_penduduk')
                     ->label('Status')
-                    ->badge()
                     ->formatStateUsing(fn (string $state): string => Penduduk::LABEL_STATUS[$state] ?? $state)
-                    ->color(fn (string $state): string => $state === 'aktif' ? 'success' : 'gray')
                     ->visibleFrom('md'),
                 TextColumn::make('jorong.nama_jorong')
                     ->label('Jorong')
@@ -73,13 +73,21 @@ class PenduduksTable
                 TextColumn::make('akses_login')
                     ->label('Login warga')
                     ->state(function (Penduduk $record): string {
-                        // Akun warga dibuat saat login pertama, jadi warga tanpa akun bukan masalah.
+                        // Akun warga dibuat saat login pertama atau pendaftaran mandiri
                         if ($record->user === null) {
                             return 'Belum pernah masuk';
                         }
 
                         if ($record->user->role !== 'warga') {
                             return 'Perlu diperiksa';
+                        }
+
+                        if ($record->user->isMenungguVerifikasi()) {
+                            return 'Menunggu verifikasi';
+                        }
+
+                        if ($record->user->isDitolakVerifikasi()) {
+                            return 'Ditolak';
                         }
 
                         if (! $record->user->is_active) {
@@ -91,6 +99,23 @@ class PenduduksTable
                     ->visibleFrom('md'),
             ])
             ->filters([
+                SelectFilter::make('status_akun')
+                    ->label('Status Akun Warga')
+                    ->options([
+                        'menunggu' => 'Menunggu Verifikasi',
+                        'terverifikasi' => 'Terverifikasi / Aktif',
+                        'ditolak' => 'Pendaftaran Ditolak',
+                        'belum' => 'Belum Pernah Masuk',
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return match ($data['value'] ?? null) {
+                            'menunggu' => $query->whereHas('user', fn ($q) => $q->where('status_verifikasi', User::VERIFIKASI_MENUNGGU)),
+                            'terverifikasi' => $query->whereHas('user', fn ($q) => $q->where('status_verifikasi', User::VERIFIKASI_TERVERIFIKASI)->where('is_active', true)),
+                            'ditolak' => $query->whereHas('user', fn ($q) => $q->where('status_verifikasi', User::VERIFIKASI_DITOLAK)),
+                            'belum' => $query->whereDoesntHave('user'),
+                            default => $query,
+                        };
+                    }),
                 SelectFilter::make('jorong_id')
                     ->label('Jorong')
                     ->relationship('jorong', 'nama_jorong'),

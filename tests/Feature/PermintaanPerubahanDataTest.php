@@ -15,6 +15,7 @@ use Database\Seeders\NagariSeeder;
 use Database\Seeders\PendudukSeeder;
 use Database\Seeders\RoleAndUserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
@@ -46,7 +47,7 @@ test('warga sends a structured correction and secretary approval updates officia
 
     Livewire::test(CreatePermintaanPerubahanData::class)
         ->assertDontSee('Keterangan untuk Sekretaris')
-        ->fillForm(['data_baru' => $usulan])
+        ->fillForm(['data_baru' => $usulan, 'dokumen_pendukung_path' => UploadedFile::fake()->image('kk.png')])
         ->call('create')
         ->assertHasNoFormErrors();
 
@@ -97,7 +98,7 @@ test('completion form identifies missing data and requires it in one request', f
     $usulan['jorong_id'] = Jorong::query()->firstOrFail()->id;
     Livewire::withQueryParams(['mode' => 'lengkapi'])
         ->test(CreatePermintaanPerubahanData::class)
-        ->fillForm(['data_baru' => $usulan])
+        ->fillForm(['data_baru' => $usulan, 'dokumen_pendukung_path' => UploadedFile::fake()->image('kk.png')])
         ->call('create')
         ->assertHasNoFormErrors();
 
@@ -220,7 +221,7 @@ test('approved NIK and birth date corrections update the citizen login identity'
     $usulan['nik'] = '1307050302910001';
 
     $this->actingAs($warga);
-    $permintaan = app(PerubahanDataPendudukService::class)->ajukan($warga, $usulan);
+    $permintaan = app(PerubahanDataPendudukService::class)->ajukan($warga, $usulan, dokumenPendukung: UploadedFile::fake()->image('ktp.png')->store('perubahan-data/'.$warga->id, 'local'));
 
     $sekretaris = User::query()->where('role', 'sekretaris')->firstOrFail();
     $this->actingAs($sekretaris);
@@ -240,7 +241,7 @@ test('secretary rejection records a reason without changing official resident da
     $usulan['tanggal_lahir'] = $penduduk->tanggal_lahir->toDateString();
     $usulan['nama'] = 'Nama Belum Terverifikasi';
     $this->actingAs($warga);
-    $permintaan = app(PerubahanDataPendudukService::class)->ajukan($warga, $usulan);
+    $permintaan = app(PerubahanDataPendudukService::class)->ajukan($warga, $usulan, dokumenPendukung: UploadedFile::fake()->image('ktp.png')->store('perubahan-data/'.$warga->id, 'local'));
 
     $sekretaris = User::query()->where('role', 'sekretaris')->firstOrFail();
     $this->actingAs($sekretaris);

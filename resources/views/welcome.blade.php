@@ -3,15 +3,48 @@
     $pengajuanUrl = auth()->user()?->role === 'warga'
         ? route('filament.panel.resources.pengajuan-wargas.create')
         : (auth()->check() ? url('/panel') : route('filament.panel.auth.login', ['tujuan' => 'pengajuan']));
+    $berandaUrl = rtrim((string) config('app.url'), '/').'/';
+    $gambarBerandaUrl = $berandaUrl.'images/nagari-taram.webp';
+    $deskripsiBeranda = 'Ajukan surat online di Nagari Taram, Kecamatan Harau, Kabupaten Lima Puluh Kota. Lihat jenis surat, pantau pengajuan, dan unduh surat resmi.';
 @endphp
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Layanan pengajuan, pemantauan, dan pengunduhan surat Nagari Taram, Kecamatan Harau, Kabupaten Lima Puluh Kota.">
+    <meta name="description" content="{{ $deskripsiBeranda }}">
     <meta name="theme-color" content="#103e35">
-    <title>Pelayanan Surat Nagari Taram</title>
+    <link rel="canonical" href="{{ $berandaUrl }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="id_ID">
+    <meta property="og:site_name" content="Pelayanan Surat Nagari Taram">
+    <meta property="og:title" content="Layanan Surat Nagari Taram | Kecamatan Harau">
+    <meta property="og:description" content="{{ $deskripsiBeranda }}">
+    <meta property="og:url" content="{{ $berandaUrl }}">
+    <meta property="og:image" content="{{ $gambarBerandaUrl }}">
+    <meta property="og:image:alt" content="Pemandangan Nagari Taram">
+    <meta name="twitter:card" content="summary_large_image">
+    <script type="application/ld+json">{!! json_encode([
+        '@@context' => 'https://schema.org',
+        '@graph' => [
+            [
+                '@type' => 'WebSite',
+                'name' => 'Pelayanan Surat Nagari Taram',
+                'alternateName' => 'Layanan Taram',
+                'url' => $berandaUrl,
+                'inLanguage' => 'id-ID',
+            ],
+            [
+                '@type' => 'GovernmentOrganization',
+                'name' => 'Pemerintah Nagari Taram',
+                'url' => $berandaUrl,
+                'areaServed' => 'Nagari Taram, Kecamatan Harau, Kabupaten Lima Puluh Kota, Sumatera Barat',
+            ],
+        ],
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+    <title>Layanan Surat Nagari Taram | Kecamatan Harau</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-w-0 bg-[#f7f5ef] font-sans text-[#1e312c] antialiased">
@@ -31,6 +64,9 @@
                 <nav aria-label="Navigasi utama" class="hidden items-center gap-8 text-sm font-semibold text-[#42564c] md:flex">
                     <a href="#layanan" class="inline-flex min-h-11 items-center rounded-sm hover:text-[#0b6049] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0e7155]">Jenis surat</a>
                     <a href="#alur" class="inline-flex min-h-11 items-center rounded-sm hover:text-[#0b6049] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0e7155]">Cara mengajukan</a>
+                    @guest
+                        <a href="{{ filament()->getRegistrationUrl() }}" class="inline-flex min-h-11 items-center rounded-sm hover:text-[#0b6049] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0e7155]">Daftar</a>
+                    @endguest
                     <a href="{{ $aksesUrl }}" class="inline-flex min-h-11 items-center justify-center rounded-md bg-[#0d6049] px-5 font-bold text-white transition-colors hover:bg-[#084b39] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0e7155]">{{ auth()->check() ? 'Buka panel' : 'Masuk layanan' }}</a>
                 </nav>
                 <a href="{{ $aksesUrl }}" class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md bg-[#0d6049] px-4 text-sm font-bold text-white transition-colors hover:bg-[#084b39] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0e7155] md:hidden">{{ auth()->check() ? 'Panel' : 'Masuk' }}</a>
@@ -38,6 +74,9 @@
             <nav aria-label="Bagian halaman" class="flex gap-7 border-t border-[#edf0eb] text-sm font-semibold text-[#42564c] md:hidden">
                 <a href="#layanan" class="inline-flex min-h-11 items-center rounded-sm hover:text-[#0b6049] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0e7155]">Jenis surat</a>
                 <a href="#alur" class="inline-flex min-h-11 items-center rounded-sm hover:text-[#0b6049] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0e7155]">Cara mengajukan</a>
+                @guest
+                    <a href="{{ filament()->getRegistrationUrl() }}" class="inline-flex min-h-11 items-center rounded-sm hover:text-[#0b6049] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0e7155]">Daftar</a>
+                @endguest
             </nav>
         </div>
     </header>
@@ -49,13 +88,16 @@
             <div class="relative z-20 mx-auto grid max-w-6xl items-center gap-12 px-5 py-14 sm:px-8 sm:py-20 lg:grid-cols-[1.14fr_0.86fr] lg:gap-20 lg:py-24">
                 <div class="max-w-2xl">
                     <p class="mb-5 flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.15em] text-[#f1d998]"><span class="h-px w-7 bg-[#d7b365]" aria-hidden="true"></span>Layanan resmi Nagari Taram</p>
-                    <h1 id="judul-utama" class="max-w-[12ch] font-serif text-[2.65rem] leading-[1.08] tracking-tight sm:text-5xl lg:text-[3.75rem]">Urus surat nagari dengan lebih mudah.</h1>
+                    <h1 id="judul-utama" class="max-w-[12ch] font-serif text-[2.65rem] leading-[1.08] tracking-tight sm:text-5xl lg:text-[3.75rem]">Urus surat Nagari Taram dengan lebih mudah.</h1>
                     <p class="mt-6 max-w-xl text-[15px] leading-7 text-[#e1eee8] sm:text-lg sm:leading-8">Ajukan permohonan, pantau prosesnya, lalu unduh surat resmi setelah diterbitkan. Semua dalam satu layanan.</p>
                     <div class="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
                         <a href="{{ $pengajuanUrl }}" class="inline-flex min-h-12 items-center justify-center gap-4 rounded-md bg-[#edce87] px-6 text-sm font-extrabold text-[#213729] transition-colors hover:bg-[#f6dd9e] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
                             {{ auth()->check() && auth()->user()?->role !== 'warga' ? 'Buka layanan saya' : 'Mulai pengajuan' }}
                             <span aria-hidden="true">→</span>
                         </a>
+                        @guest
+                            <a href="{{ filament()->getRegistrationUrl() }}" class="inline-flex min-h-12 items-center justify-center rounded-md border border-white/40 bg-white/10 px-5 text-sm font-bold text-white transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">Daftar akun warga</a>
+                        @endguest
                         <a href="#layanan" class="inline-flex min-h-11 items-center justify-center rounded-sm text-sm font-bold text-white underline decoration-[#c9b073] underline-offset-8 hover:text-[#f5dfa8] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white sm:justify-start">Lihat jenis surat</a>
                     </div>
                 </div>
@@ -95,7 +137,7 @@
                             <li class="min-w-0 border-b border-[#d8e0d4]">
                                 <a href="{{ auth()->user()?->role === 'warga' ? route('filament.panel.resources.pengajuan-wargas.create', ['jenis_surat' => $surat->id]) : (auth()->check() ? url('/panel') : route('filament.panel.auth.login', ['tujuan' => 'pengajuan', 'jenis_surat' => $surat->id])) }}" class="group grid min-h-24 grid-cols-[2.5rem_minmax(0,1fr)_1.5rem] items-center gap-3 py-4 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#0e7155] sm:gap-5">
                                     <span class="self-start pt-1 font-serif text-lg text-[#52695a]">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
-                                    <span class="min-w-0 break-words text-[15px] font-bold leading-6 text-[#1e312c] group-hover:text-[#0b6049] sm:text-base">{{ $surat->nama_surat }}</span>
+                                    <span class="min-w-0 break-words text-[15px] font-bold leading-6 text-[#1e312c] group-hover:text-[#0b6049] sm:text-base">{{ $surat->nama_layanan_tampil }}</span>
                                     <span class="justify-self-end text-xl text-[#0b6049] transition-transform group-hover:translate-x-1" aria-hidden="true">→</span>
                                 </a>
                             </li>

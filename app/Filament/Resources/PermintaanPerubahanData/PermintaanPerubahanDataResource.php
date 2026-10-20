@@ -11,6 +11,7 @@ use App\Models\PermintaanPerubahanData;
 use App\Models\User;
 use App\Support\Dashboard\TaskCounts;
 use BackedEnum;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\ViewEntry;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -123,6 +124,15 @@ class PermintaanPerubahanDataResource extends Resource
             ViewEntry::make('rincian_perubahan')
                 ->hiddenLabel()
                 ->view('filament.perubahan-data.rincian')
+                ->columnSpanFull(),
+            TextEntry::make('dokumen_pendukung_path')
+                ->label('Dokumen pendukung')
+                ->formatStateUsing(fn (): string => 'Lihat dokumen pendukung')
+                ->placeholder('Tidak diunggah (permintaan lama atau perubahan nomor HP).')
+                ->url(fn (PermintaanPerubahanData $record): ?string => filled($record->dokumen_pendukung_path)
+                    ? route('dokumen.perubahan-data', $record)
+                    : null)
+                ->openUrlInNewTab()
                 ->columnSpanFull(),
         ]);
     }

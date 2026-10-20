@@ -158,6 +158,9 @@ test('isi dan tata letak setiap surat starter sama dengan rekaman golden', funct
         'ref_kewarganegaraan_id' => 1, 'no_hp' => '081234567890',
     ]);
     $jenisSurat = JenisSurat::where('nama_surat', $namaSurat)->firstOrFail();
+    if ($namaSurat === 'Surat Keterangan') {
+        $jenisSurat->update(['nama_layanan' => 'Surat Keterangan Perbedaan Data Buku Nikah dan Kartu Keluarga']);
+    }
     $jenisSurat->update(['status' => 'aktif']);
 
     $dataIsian = app(PengajuanValidationService::class)
@@ -177,10 +180,16 @@ test('isi dan tata letak setiap surat starter sama dengan rekaman golden', funct
     ]);
 
     $kontenSurat = null;
-    View::composer('pdf.surat-resmi', function ($view) use (&$kontenSurat): void {
+    $judulPdf = null;
+    View::composer('pdf.surat-resmi', function ($view) use (&$kontenSurat, &$judulPdf): void {
         $kontenSurat = $view->getData()['kontenSurat'];
+        $judulPdf = $view->getData()['namaSurat'];
     });
     $pdf = app(PdfSuratGenerator::class)->generatePdfInstance($pengajuan)->output();
+
+    if ($namaSurat === 'Surat Keterangan') {
+        expect($judulPdf)->toBe('Surat Keterangan');
+    }
 
     $kasus = array_search([$namaSurat, $isian], kasusGoldenSurat(), true);
     $rekaman = ['konten' => teksStrukturSurat((string) $kontenSurat)];

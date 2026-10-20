@@ -71,12 +71,15 @@ class CreatePermintaanPerubahanData extends CreateRecord
                 $warga,
                 $data['data_baru'] ?? [],
                 $this->mode === 'lengkapi',
+                $data['dokumen_pendukung_path'] ?? null,
             );
         } catch (ValidationException $exception) {
             $pesanPermintaan = $exception->errors()['data_baru'][0] ?? null;
 
             if ($pesanPermintaan === null) {
-                throw $exception;
+                throw ValidationException::withMessages(collect($exception->errors())
+                    ->mapWithKeys(fn (array $messages, string $field): array => ['data.'.$field => $messages])
+                    ->all());
             }
 
             Notification::make()

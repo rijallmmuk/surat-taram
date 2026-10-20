@@ -306,13 +306,44 @@ test('wrong passwords are rejected for both warga and staff on one form', functi
         ->set('data.email', '1307992708589002')
         ->set('data.password', 'sandi-salah')
         ->call('authenticate')
-        ->assertHasErrors(['data.email']);
+        ->assertOnlyHasErrors(['data.password' => 'Kata sandi salah.']);
 
     Livewire::test(UnifiedLogin::class)
         ->set('data.email', 'sekretaris')
         ->set('data.password', 'sandi-salah')
         ->call('authenticate')
-        ->assertHasErrors(['data.email']);
+        ->assertOnlyHasErrors(['data.password' => 'Kata sandi salah.']);
+
+    $this->assertGuest();
+});
+
+test('unknown identity and password errors appear on both login fields', function () {
+    filament()->setCurrentPanel(filament()->getPanel('panel'));
+
+    Livewire::test(UnifiedLogin::class)
+        ->set('data.email', 'akun-tidak-dikenal')
+        ->set('data.password', 'sandi-salah')
+        ->call('authenticate')
+        ->assertOnlyHasErrors([
+            'data.email' => 'NIK, username, atau email tidak ditemukan.',
+            'data.password' => 'Kata sandi tidak cocok dengan identitas ini.',
+        ]);
+
+    $this->assertGuest();
+});
+
+test('unregistered NIK and password errors appear on both login fields', function () {
+    filament()->setCurrentPanel(filament()->getPanel('panel'));
+    $nik = '9999999999999999';
+
+    Livewire::test(UnifiedLogin::class)
+        ->set('data.email', $nik)
+        ->set('data.password', 'sandi-salah')
+        ->call('authenticate')
+        ->assertOnlyHasErrors([
+            'data.email' => 'NIK tidak ditemukan.',
+            'data.password' => 'Kata sandi tidak cocok dengan NIK ini.',
+        ]);
 
     $this->assertGuest();
 });
@@ -340,9 +371,41 @@ test('citizen account exists before login and rejects a wrong initial password',
         ->set('data.email', $nik)
         ->set('data.password', '01011990')
         ->call('authenticate')
-        ->assertHasErrors(['data.email']);
+        ->assertOnlyHasErrors(['data.password' => 'Kata sandi salah.']);
 
     expect(User::where('username', $nik)->where('role', 'warga')->count())->toBe(1);
+    $this->assertGuest();
+});
+
+test('first-time citizen with a wrong birth date sees only the password error', function () {
+    filament()->setCurrentPanel(filament()->getPanel('panel'));
+    $nik = '1307994901739001';
+    User::where('username', $nik)->where('role', 'warga')->delete();
+
+    Livewire::test(UnifiedLogin::class)
+        ->set('data.email', $nik)
+        ->set('data.password', '01011990')
+        ->call('authenticate')
+        ->assertOnlyHasErrors([
+            'data.password' => 'Kata sandi salah. Untuk masuk pertama kali, gunakan tanggal lahir berformat DDMMYYYY.',
+        ]);
+
+    expect(User::where('username', $nik)->where('role', 'warga')->exists())->toBeFalse();
+    $this->assertGuest();
+});
+
+test('inactive account with its correct password reports the account field', function () {
+    filament()->setCurrentPanel(filament()->getPanel('panel'));
+    User::where('role', 'sekretaris')->firstOrFail()->update(['is_active' => false]);
+
+    Livewire::test(UnifiedLogin::class)
+        ->set('data.email', 'sekretaris')
+        ->set('data.password', 'password')
+        ->call('authenticate')
+        ->assertOnlyHasErrors([
+            'data.email' => 'Akun ini tidak aktif atau tidak dapat mengakses layanan.',
+        ]);
+
     $this->assertGuest();
 });
 
@@ -374,7 +437,7 @@ test('birth date cannot replace a personal password after it was changed', funct
         ->set('data.email', $resident->nik)
         ->set('data.password', '27081958')
         ->call('authenticate')
-        ->assertHasErrors(['data.email']);
+        ->assertOnlyHasErrors(['data.password' => 'Kata sandi salah.']);
 
     $resident->update(['tanggal_lahir' => '1958-08-28']);
 
@@ -391,7 +454,7 @@ test('first login cannot overwrite a preexisting custom citizen password', funct
         ->set('data.email', $resident->nik)
         ->set('data.password', '27081958')
         ->call('authenticate')
-        ->assertHasErrors(['data.email']);
+        ->assertOnlyHasErrors(['data.password' => 'Kata sandi salah.']);
 
     expect(Hash::check('ExistingCustom2026', $account->fresh()->password))->toBeTrue();
 });

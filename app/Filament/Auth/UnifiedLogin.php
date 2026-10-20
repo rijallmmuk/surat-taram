@@ -21,8 +21,10 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Schema;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
 
@@ -32,6 +34,14 @@ class UnifiedLogin extends BaseLogin
      * Cookie yang mengingat akun terakhir yang masuk di peramban ini.
      */
     public const COOKIE_PENGGUNA_TERAKHIR = 'taram_pengguna_terakhir';
+
+    private bool $identitasLoginValid = false;
+
+    private bool $akunTidakDiizinkan = false;
+
+    private ?string $alasanAkunTidakDiizinkan = null;
+
+    private bool $isNikFormat = false;
 
     protected string $view = 'filament.auth.unified-login';
 
@@ -65,15 +75,27 @@ class UnifiedLogin extends BaseLogin
         parent::mount();
     }
 
+    protected function rateLimit($maxAttempts, $decaySeconds = 60, $method = null, $component = null): void
+    {
+        // Dinonaktifkan: login tidak menggunakan rate limiter
+    }
+
     public function authenticate(): ?LoginResponse
     {
+        $this->identitasLoginValid = false;
+        $this->akunTidakDiizinkan = false;
+        $this->alasanAkunTidakDiizinkan = null;
+        $this->isNikFormat = false;
+
         $response = parent::authenticate();
 
+        $user = Filament::auth()->user();
+
         if ($response) {
-            $this->abaikanTujuanPenggunaLain(Filament::auth()->user());
+            $this->abaikanTujuanPenggunaLain($user);
         }
 
-        if ($response && Filament::auth()->user()?->role === 'warga' && $this->loginDestination === 'pengajuan') {
+        if ($response && $user?->role === 'warga' && $this->loginDestination === 'pengajuan') {
             $parameters = $this->jenisSuratId ? ['jenis_surat' => $this->jenisSuratId] : [];
             session()->put('url.intended', PengajuanWargaResource::getUrl('create', $parameters));
         }
@@ -96,7 +118,7 @@ class UnifiedLogin extends BaseLogin
         }
 
         if ($response) {
-            $this->ingatkanKelengkapanPenandatanganan(Filament::auth()->user());
+            $this->ingatkanKelengkapanPenandatanganan($user);
         }
 
         return $response;
@@ -115,6 +137,24 @@ class UnifiedLogin extends BaseLogin
         $penggunaTerakhir = request()->cookie(self::COOKIE_PENGGUNA_TERAKHIR);
         if (filled($penggunaTerakhir) && (string) $penggunaTerakhir !== (string) $user->getKey()) {
             session()->forget('url.intended');
+        }
+
+        if (session()->has('url.intended')) {
+            $intended = (string) session('url.intended');
+            $path = parse_url($intended, PHP_URL_PATH) ?? '';
+
+            if (in_array($path, ['/panel/login', '/login', '/panel/register', '/dashboard/task-counts'], true)
+                || str_starts_with($path, '/livewire')) {
+                session()->forget('url.intended');
+            } elseif ($user->role === 'warga' && str_starts_with($path, '/panel/')) {
+                $isAllowedWargaPath = str_starts_with($path, '/panel/pengajuan-wargas')
+                    || str_starts_with($path, '/panel/permintaan-perubahan-data')
+                    || str_starts_with($path, '/panel/profile');
+
+                if (! $isAllowedWargaPath) {
+                    session()->forget('url.intended');
+                }
+            }
         }
 
         Cookie::queue(Cookie::forever(self::COOKIE_PENGGUNA_TERAKHIR, (string) $user->getKey()));
@@ -219,12 +259,19 @@ class UnifiedLogin extends BaseLogin
      */
     protected function getCredentialsFromFormData(array $data): array
     {
-        $login = trim($data['email'] ?? '');
+        $rawLogin = trim($data['email'] ?? '');
+        $login = WargaAuthService::normalisasiNik($rawLogin);
         $password = (string) ($data['password'] ?? '');
         $loginField = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
-        $user = User::query()->where($loginField, $login)->first();
 
-        if (! $user && $loginField === 'username' && strlen($login) === 16 && ctype_digit($login)) {
+        $this->isNikFormat = ($loginField === 'username' && strlen($login) === 16 && ctype_digit($login));
+
+        $user = User::query()
+            ->where($loginField, $login)
+            ->when($this->isNikFormat, fn ($query) => $query->orWhere('penduduk_nik', $login))
+            ->first();
+
+        if (! $user && $this->isNikFormat) {
             $user = app(WargaAuthService::class)->provisionForLogin($login, $password);
         }
 
@@ -232,13 +279,88 @@ class UnifiedLogin extends BaseLogin
             $this->throwFailureValidationException();
         }
 
-        return [$loginField => $login, 'password' => $password];
+        if ($user->role === 'warga') {
+            if ($user->isMenungguVerifikasi()) {
+                throw app(WargaAuthService::class)->waitingVerificationAccount();
+            }
+
+            if ($user->isDitolakVerifikasi()) {
+                throw app(WargaAuthService::class)->rejectedVerificationAccount($user->catatan_verifikasi);
+            }
+
+            // Normalisasi kata sandi tanggal lahir untuk warga yang akunnya masih menggunakan sandi tanggal lahir bawaan
+            if ($user->password_changed_at === null && $user->penduduk?->tanggal_lahir !== null) {
+                $canonical = $user->penduduk->tanggal_lahir->format('dmY');
+                if (Hash::check($canonical, $user->password)) {
+                    $wargaAuth = app(WargaAuthService::class);
+                    if ($wargaAuth->cocokkanTanggalLahir($user->penduduk->tanggal_lahir, $password)) {
+                        $password = $canonical;
+                    }
+                }
+            }
+        }
+
+        $this->identitasLoginValid = true;
+
+        $actualLogin = $user->getAttribute($loginField) ?? $login;
+
+        return [$loginField => $actualLogin, 'password' => $password];
+    }
+
+    protected function isUserAllowedToAccessPanel(Authenticatable $user): bool
+    {
+        if ($user instanceof User) {
+            if ($user->role === 'warga') {
+                if ($user->isMenungguVerifikasi()) {
+                    $this->akunTidakDiizinkan = true;
+                    $this->alasanAkunTidakDiizinkan = 'Akun Anda belum diverifikasi oleh petugas perangkat nagari. Silakan tunggu verifikasi petugas sebelum dapat masuk.';
+
+                    return false;
+                }
+
+                if ($user->isDitolakVerifikasi()) {
+                    $this->akunTidakDiizinkan = true;
+                    $pesan = 'Pendaftaran akun Anda ditolak oleh petugas perangkat nagari.';
+                    if (filled($user->catatan_verifikasi)) {
+                        $pesan .= ' Alasan: '.trim($user->catatan_verifikasi);
+                    }
+                    $this->alasanAkunTidakDiizinkan = $pesan;
+
+                    return false;
+                }
+            }
+        }
+
+        $allowed = parent::isUserAllowedToAccessPanel($user);
+        $this->akunTidakDiizinkan = ! $allowed;
+
+        return $allowed;
     }
 
     protected function throwFailureValidationException(): never
     {
+        if ($this->akunTidakDiizinkan) {
+            throw ValidationException::withMessages([
+                'data.email' => $this->alasanAkunTidakDiizinkan ?? 'Akun ini tidak aktif atau tidak dapat mengakses layanan.',
+            ]);
+        }
+
+        if ($this->identitasLoginValid) {
+            throw ValidationException::withMessages([
+                'data.password' => 'Kata sandi salah.',
+            ]);
+        }
+
+        if ($this->isNikFormat) {
+            throw ValidationException::withMessages([
+                'data.email' => 'NIK tidak ditemukan.',
+                'data.password' => 'Kata sandi tidak cocok dengan NIK ini.',
+            ]);
+        }
+
         throw ValidationException::withMessages([
-            'data.email' => 'NIK, username, email, atau kata sandi tidak cocok.',
+            'data.email' => 'NIK, username, atau email tidak ditemukan.',
+            'data.password' => 'Kata sandi tidak cocok dengan identitas ini.',
         ]);
     }
 }

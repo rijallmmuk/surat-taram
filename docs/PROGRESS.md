@@ -2,6 +2,28 @@
 
 Dokumen ini mencatat ringkasan status sistem, pekerjaan yang telah diselesaikan, dan panduan langsung untuk melanjutkan pengembangan saat user memberikan perintah **"lanjut"**.
 
+## Status terkini — 20 Oktober 2026 (Refinement Menu Pendaftaran & Login)
+
+- **Menu Khusus Pendaftaran Akun Warga**: Pendaftaran mandiri warga dipisahkan ke menu tersendiri di panel navigasi Kependudukan: `PendaftaranAkunWargaResource` (senada dengan `PermintaanPerubahanDataResource`). Tersedia tabel antrean pendaftaran mandiri (kolom plain text tanpa badge), filter status, dan halaman detail View yang menampilkan rincian data lengkap yang diajukan. Petugas dapat menyetujui (aktifkan akun) atau menolak (wajib alasan penolakan) langsung dari daftar atau halaman detail. Aksi verifikasi telah dilepas dari tabel Data Warga (`PenduduksTable`) agar menu master penduduk tetap bersih.
+- **Kelengkapan Isian & Dokumen KTP**: Formulir pendaftaran mandiri warga (`RegisterWarga`) kini telah dilengkapi seluruh atribut demografis setara form Tambah Warga (`nik`, `kk_number`, `nama`, `tempat_lahir`, `tanggal_lahir`, `jenis_kelamin`, `jorong_id`, `ref_agama_id`, `ref_status_kawin_id`, `ref_pekerjaan_id`, `ref_pendidikan_id`, `ref_kewarganegaraan_id`, `no_hp`), ditambah unggahan wajib berkas scan/foto KTP (maks. 5 MB, PDF/JPG/PNG).
+- **Auto-indexing Berkas KTP ke Bank Dokumen**: Saat pendaftaran disetujui petugas, berkas KTP otomatis terdaftar di `dokumen_warga` warga terkait sebagai "KTP Pemohon", sehingga warga tidak perlu mengunggah ulang saat mengajukan surat yang mensyaratkan KTP.
+- **Pemeriksaan Berkas KTP Privat**: Petugas dapat langsung melihat/mengunduh berkas KTP pemohon melalui halaman detail pendaftaran lewat route privat terlindungi `dokumen.pendaftaran-ktp`.
+- **Tabel Riwayat Pendaftaran**: Dibuat tabel `pendaftaran_akun_wargas` untuk mencatat riwayat setiap pengajuan akun warga secara terisolasi dan rapi, lengkap dengan audit log.
+- **Penonaktifan Rate Limiter Login**: Pembatasan percobaan login (rate limiter) pada `UnifiedLogin` dinonaktifkan sepenuhnya sesuai arahan. Percobaan masuk yang salah menampilkan pesan galat yang jelas tanpa memblokir peramban pengguna.
+- **Pengujian**: Seluruh 485 tes lulus (5 dilewati khusus MariaDB pada environment SQLite test runner). Pint dan build Vite selesai tanpa galat. Data lokal `surattaram` tetap utuh.
+
+---
+
+## Status terkini — 12 Oktober 2026
+
+- Permintaan perangkat Nagari ditindaklanjuti pada keputusan #128: syarat wajib Slip Gaji / Bukti Penghasilan (surat pernyataan pengganti diperbolehkan); dokumen pendukung koreksi/pelengkapan data wajib kecuali perubahan nomor HP; tabel Jorong menghitung nomor KK unik penduduk aktif sebagai Jumlah KK.
+- Reset penomoran tahunan dan ganti sandi warga tanpa persetujuan Sekretaris sudah tersedia dan dipertahankan; registrasi mandiri tidak ditambahkan.
+- Migrasi dokumen pendukung serta `SyaratPenghasilanSeeder` sudah diterapkan pada database lokal `surattaram` tanpa membangun ulang database. Instalasi baru memuat syarat melalui seeder starter; konfigurasi surat tetap dikelola builder.
+- Verifikasi terarah: **87 tes lulus, 697 assertion** (perubahan data, dokumen pendukung, jumlah KK, syarat penghasilan, delapan surat, penomoran, profil, Jorong). Pint dan build Vite berhasil. Suite lengkap belum dijalankan pada sesi ini.
+- Browser lokal: admin melihat Jumlah KK dan syarat penghasilan wajib di builder; warga fiktif membuka form koreksi, perubahan nama memunculkan tanda wajib unggahan, kirim tanpa bukti menampilkan galat. Form pada lebar 390 px tidak meluap horizontal. Uji pemilih berkas manual belum tuntas karena koneksi debugger ekstensi Chrome terputus ketika pemilih dibuka; unggah/simpan/baca berkas dan batas akses dibuktikan tes aplikasi.
+- Buku `docs/panduan-pengguna/panduan-pengguna.pdf` diperbarui menjadi 113 halaman, edisi 12 Oktober 2026: A4 satu sisi, margin kiri 25 mm untuk jilid, kanan 18 mm, atas 18 mm, bawah 20 mm; sampul depan/belakang baru. Petunjuk dan screenshot mencakup bukti penghasilan pengganti, bukti koreksi data, Jumlah KK, penomoran tahunan, dan sandi tanpa persetujuan. Builder dilengkapi dialog tabel, bagian bersyarat, dan contoh pengaturan syarat penghasilan. Screenshot baru memakai data fiktif pada SQLite terpisah; daftar isi 68 judul cocok dengan PDF dan seluruh halaman ditinjau melalui render. Pembuatan ulang: `bash docs/panduan-pengguna/alat/buat.sh`.
+- Hosting, format resmi dua surat, dan persetujuan operasional Nagari tetap merupakan pekerjaan terbuka; hasil lokal tidak menyatakan siap go-live.
+
 ---
 
 ## Status terkini — 7 Oktober 2026 (menggantikan status di bawah)

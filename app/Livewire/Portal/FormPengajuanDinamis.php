@@ -170,7 +170,7 @@ class FormPengajuanDinamis extends Component
             filePath: 'berkasSyarat',
         );
 
-        session()->flash('success', "Pengajuan {$this->jenisSurat->nama_surat} Anda berhasil terkirim dan menunggu verifikasi berkas.");
+        session()->flash('success', "Pengajuan {$this->jenisSurat->nama_layanan_tampil} Anda berhasil terkirim dan menunggu verifikasi berkas.");
 
         return redirect('/panel/pengajuan-wargas');
     }
@@ -202,6 +202,6 @@ class FormPengajuanDinamis extends Component
             'dokumenTersimpan' => $dokumenTersimpan,
             'syaratBerlaku' => $syaratBerlaku,
             'fieldBerlaku' => $fieldBerlaku,
-        ])->layout('components.portal.layout', ['title' => 'Ajukan '.$this->jenisSurat->nama_surat]);
+        ])->layout('components.portal.layout', ['title' => 'Ajukan '.$this->jenisSurat->nama_layanan_tampil]);
     }
 }

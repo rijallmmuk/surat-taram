@@ -2,6 +2,7 @@
 
 use App\Filament\Resources\JenisSurats\Pages\CreateJenisSurat;
 use App\Filament\Resources\JenisSurats\Pages\EditJenisSurat;
+use App\Filament\Resources\JenisSurats\Pages\ListJenisSurats;
 use App\Filament\Resources\PengajuanWargaResource;
 use App\Models\JenisSurat;
 use App\Models\NomorUrutCounter;
@@ -38,6 +39,31 @@ beforeEach(function () {
         PendudukSeeder::class,
         RoleAndUserSeeder::class,
     ]);
+});
+
+test('daftar builder menampilkan dan mencari nama layanan lengkap dengan fallback nama surat resmi', function () {
+    $jenisDenganNamaLayanan = JenisSurat::create([
+        'nama_surat' => 'Surat Keterangan',
+        'nama_layanan' => 'Surat Keterangan Perbedaan Data Buku Nikah dan Kartu Keluarga',
+        'kode_klasifikasi' => '400.10.2.2',
+        'kode_unit' => 'PEL',
+        'status' => 'draft',
+    ]);
+    $jenisTanpaNamaLayanan = JenisSurat::create([
+        'nama_surat' => 'Surat Keterangan Domisili',
+        'kode_klasifikasi' => '400.10.2.2',
+        'kode_unit' => 'PEL',
+        'status' => 'draft',
+    ]);
+
+    $this->actingAs(User::where('role', 'admin')->firstOrFail());
+
+    Livewire::test(ListJenisSurats::class)
+        ->assertTableColumnStateSet('nama_layanan_tampil', 'Surat Keterangan Perbedaan Data Buku Nikah dan Kartu Keluarga', $jenisDenganNamaLayanan)
+        ->assertTableColumnStateSet('nama_layanan_tampil', 'Surat Keterangan Domisili', $jenisTanpaNamaLayanan)
+        ->searchTable('Perbedaan Data Buku Nikah')
+        ->assertCanSeeTableRecords([$jenisDenganNamaLayanan])
+        ->assertCanNotSeeTableRecords([$jenisTanpaNamaLayanan]);
 });
 
 test('admin can create dynamic jenis surat with skema form, template, and syarat', function () {

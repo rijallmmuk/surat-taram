@@ -5,7 +5,7 @@
             &larr; Kembali ke Pilihan Surat
         </a>
         <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
-            Pengajuan {{ $jenisSurat->nama_surat }}
+            Pengajuan {{ $jenisSurat->nama_layanan_tampil }}
         </h1>
         <p class="text-sm text-slate-500 mt-1">Lengkapi data permohonan di bawah ini dengan benar.</p>
     </div>
@@ -228,7 +228,7 @@
                         default => ucwords(str_replace('_', ' ', $groupKey)),
                     };
                     $groupSubtitle = match ($groupKey) {
-                        'data_ayah', 'data_ibu' => 'Centang jika permohonan diajukan atas nama anak/siswa/mahasiswa (untuk beasiswa, KIP, keringanan biaya, dll).',
+                        'data_ayah', 'data_ibu' => 'Opsional. Cukup sertakan data ayah atau ibu yang tersedia; tidak perlu mengisi keduanya.',
                         default => $isOptional ? 'Centang opsi ini jika ingin melampirkan keterangan kelompok data ini.' : 'Lengkapi keterangan berikut.',
                     };
                     $isActive = ! $isOptional || ($toggledGroups[$groupKey] ?? false);

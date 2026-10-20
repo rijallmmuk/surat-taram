@@ -29,14 +29,14 @@ npm run build
 bash scripts/buat-paket-hosting.sh
 ```
 
-Hasilnya `/tmp/paket-hosting-surat-taram.tar.gz`. Arsip berisi dua folder sejajar: `surat-taram-app` (aplikasi privat) dan `public_html` (satu-satunya folder web). Ekstrak arsip pada folder domain yang **memuat** `public_html`, bukan di dalam `public_html`. Jangan mengunggah isi akar proyek langsung ke `public_html`; file `.env`, database, dan berkas surat harus berada di luar web root. Pola ini mengikuti [panduan deployment Laravel](https://laravel.com/framework/docs/deployment) dan menghindari penempatan seluruh aplikasi di web root seperti contoh lama [Hostinger untuk Laravel 8](https://www.hostinger.com/support/6152127-how-to-deploy-laravel-8-at-hostinger/).
+Hasilnya `/tmp/paket-hosting-surat-taram.tar.gz`. Arsip berisi `surat-taram-app` (aplikasi privat) dan `public_html` (berkas web). Pada subdomain Hostinger saat ini, document root ialah `/home/u867482934/domains/taram.id/public_html/layanan`: letakkan `surat-taram-app` di `/home/u867482934/domains/taram.id/surat-taram-app`, lalu salin **isi** folder `public_html` dari paket ke document root subdomain. Ekstrak paket ke direktori sementara terlebih dahulu; jangan ekstrak langsung di direktori domain karena dapat menimpa `public_html` situs utama. File `.env`, database, dan berkas surat harus berada di luar web root. Pola ini mengikuti [panduan deployment Laravel](https://laravel.com/framework/docs/deployment) dan menghindari penempatan seluruh aplikasi di web root seperti contoh lama [Hostinger untuk Laravel 8](https://www.hostinger.com/support/6152127-how-to-deploy-laravel-8-at-hostinger/).
 
 Hosting harus menyediakan SSH/Terminal, Composer, PHP **8.4.1 atau lebih baru** dengan ekstensi yang diperiksa `app:cek-deploy`, MySQL/MariaDB, dan HTTPS. Batas 8.4.1 berasal dari dependensi yang terkunci di `composer.lock`. Pastikan versi PHP untuk terminal dan website sama. Pada hPanel → Websites → Dashboard → PHP Configuration → PHP Options, set `upload_max_filesize=16M`, `post_max_size=32M`, `memory_limit` minimal `256M`, dan `max_execution_time` minimal `30`. [Panduan PHP Options Hostinger](https://www.hostinger.com/support/4622479-how-to-change-values-of-php-parameters-in-hostinger/).
 
 ## Instalasi pertama di server
 
 1. Buat basis data MySQL/MariaDB dan pengguna database khusus aplikasi di hPanel. Aktifkan SSL dan paksa akses HTTPS pada domain.
-2. Ekstrak paket ke folder domain sehingga `public_html/index.php` dan `surat-taram-app/artisan` berada sejajar. Jangan ekstrak ulang menimpa aplikasi yang sudah berisi data operasional.
+2. Ekstrak paket ke folder sementara. Tempatkan `surat-taram-app/artisan` di luar `public_html`, dan isi `public_html` paket di `public_html/layanan` sesuai lokasi di atas. Jangan menimpa aplikasi yang sudah berisi data operasional.
 3. Masuk lewat SSH ke `surat-taram-app`, lalu jalankan:
 
 ```bash
@@ -51,7 +51,7 @@ cp .env.example .env
 APP_NAME="Pelayanan Surat Nagari Taram"
 APP_ENV=production
 APP_DEBUG=false
-APP_URL=https://domain-anda.tld
+APP_URL=https://layanan.taram.id
 APP_LOCALE=id
 APP_FALLBACK_LOCALE=id
 APP_TIMEZONE=Asia/Jakarta
@@ -83,7 +83,7 @@ read -rsp 'Sandi awal Wali Nagari: ' SEED_WALI_NAGARI_PASSWORD; printf '\n'
 export SEED_SUPERADMIN_PASSWORD SEED_ADMIN_PASSWORD SEED_WALI_NAGARI_PASSWORD
 php artisan db:seed --force --no-interaction
 unset SEED_SUPERADMIN_PASSWORD SEED_ADMIN_PASSWORD SEED_WALI_NAGARI_PASSWORD
-ln -s ../surat-taram-app/storage/app/public ../public_html/storage
+ln -s ../../surat-taram-app/storage/app/public ../public_html/layanan/storage
 php artisan optimize --no-interaction
 ```
 
@@ -96,9 +96,11 @@ Stempel Nagari dan tanda tangan Wali periode berjalan dipasang otomatis dari fol
 6. Masuk ke `/panel` dengan akun superadmin dan admin awal, lalu ganti sandi awal lewat menu profil. Periksa Kop & Profil Nagari dan pastikan stempel sudah terpasang (unggah bila seeder memberi peringatan); surat tidak dapat diterbitkan tanpa stempel. Akun Wali Nagari masuk lalu mengganti sandi awal; periksa tanda tangan Wali di menu Pejabat Nagari. Tambahkan Sekretaris/petugas verifikasi beserta akunnya di menu Pejabat Nagari. Gambar stempel dan tanda tangan hanya tercetak pada PDF surat terbit. Impor data penduduk yang memang disetujui untuk layanan ini; paket tidak membawa data warga contoh. Setelah itu jalankan:
 
 ```bash
-php artisan app:cek-deploy --public-path=../public_html --no-interaction
+php artisan app:cek-deploy --public-path=../public_html/layanan --no-interaction
 ```
 
 7. Uji dari domain HTTPS: `/up`, login, pengajuan warga dengan lampiran mendekati 5 MB, verifikasi Sekretaris, penerbitan Wali, dan unduh PDF resmi. Pastikan URL seperti `/.env` serta `/composer.json` tidak dapat diakses. Bandingkan batas PHP pada halaman PHP Info hPanel dengan keluaran CLI karena keduanya dapat memakai konfigurasi berbeda. Siapkan cadangan berkala untuk database dan `storage/app`, lalu uji pemulihannya sebelum layanan dipakai warga.
+
+8. Setelah domain aktif, periksa `https://layanan.taram.id/`, `/robots.txt`, `/sitemap.xml`, dan `/favicon.ico` dari browser tanpa login. Daftarkan properti `https://layanan.taram.id/` di Google Search Console, verifikasi kepemilikannya, kirim `https://layanan.taram.id/sitemap.xml`, lalu gunakan Inspeksi URL untuk beranda. Sitemap hanya berisi beranda publik; panel dan dokumen pribadi diberi `noindex`. Pengiriman sitemap membantu penemuan URL, tetapi pengindeksan dan peringkat tetap diputuskan mesin pencari.
 
 `app:cek-deploy` memeriksa konfigurasi CLI, migrasi, akun petugas, tanda tangan Wali, berkas, dan aset. Hasil lulus belum menggantikan uji HTTPS, PHP web, akses dokumen, dan alur surat pada domain sesungguhnya.

@@ -37,7 +37,7 @@
                             <span class="text-xs text-slate-400">Klasifikasi {{ $surat->kode_klasifikasi }}</span>
                         </div>
                         <h3 class="text-lg font-bold text-slate-900 mb-2 leading-snug">
-                            {{ $surat->nama_surat }}
+                            {{ $surat->nama_layanan_tampil }}
                         </h3>
                         <p class="text-xs text-slate-500 mb-6">
                             Penomoran otomatis resmi nagari • Verifikasi berkas online • Terbit berkas digital

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,6 +16,7 @@ class JenisSurat extends Model
 
     protected $fillable = [
         'nama_surat',
+        'nama_layanan',
         'kode_klasifikasi',
         'kode_unit',
         'pola_format_nomor',
@@ -31,6 +33,11 @@ class JenisSurat extends Model
             'padding_digit' => 'integer',
             'urutan_tampil' => 'integer',
         ];
+    }
+
+    protected function namaLayananTampil(): Attribute
+    {
+        return Attribute::get(fn (): string => filled($this->nama_layanan) ? $this->nama_layanan : $this->nama_surat);
     }
 
     public function skemaFormFields(): HasMany

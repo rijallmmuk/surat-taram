@@ -85,7 +85,7 @@ class PejabatNagariForm
                                 ? 'Tanda tangan Wali saat ini sudah tersedia. Unggah hanya bila perlu menggantinya.'
                                 : 'Unggah tanda tangan pejabat ini sebelum menerbitkan surat.')
                             ->image()
-                            ->acceptedFileTypes(['image/png', 'image/jpeg'])
+                            ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/jpg', 'image/pjpeg'])
                             ->previewable(false)
                             ->maxSize(5120)
                             ->disk('local')

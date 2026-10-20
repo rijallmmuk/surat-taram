@@ -103,6 +103,10 @@ trait CatatAudit
             'file_tanda_tangan_path' => 'berkas tanda tangan',
             'status_aktif' => 'status menjabat',
             'user_id' => 'akun login',
+            'status_verifikasi' => 'status verifikasi akun',
+            'diverifikasi_oleh_user_id' => 'petugas verifikasi',
+            'diverifikasi_at' => 'waktu verifikasi',
+            'catatan_verifikasi' => 'catatan verifikasi',
             default => str_replace('_', ' ', preg_replace('/^ref_|_id$/', '', $kolom) ?? $kolom),
         };
     }

@@ -7,7 +7,9 @@ use App\Models\JenisSurat;
 use App\Models\LampiranPengajuan;
 use App\Models\Nagari;
 use App\Models\PejabatNagari;
+use App\Models\PendaftaranAkunWarga;
 use App\Models\PengajuanSurat;
+use App\Models\PermintaanPerubahanData;
 use App\Models\User;
 use App\Services\ContohIsianSurat;
 use App\Services\KatalogTagSurat;
@@ -24,6 +26,26 @@ use Symfony\Component\HttpFoundation\Response;
 class DokumenController extends Controller
 {
     private const PERAN_STAF = ['superadmin', 'admin', 'sekretaris', 'wali_nagari'];
+
+    public function lihatDokumenPerubahanData(Request $request, PermintaanPerubahanData $permintaan): Response
+    {
+        $user = $this->penggunaAktif($request);
+        abort_unless(in_array($user->role, ['superadmin', 'admin', 'sekretaris'], true)
+            || ($user->role === 'warga' && $permintaan->diajukan_oleh_user_id === $user->id), 403);
+        abort_unless(filled($permintaan->dokumen_pendukung_path), 404, 'Permintaan ini tidak memiliki dokumen pendukung.');
+
+        return $this->responsBerkasPrivat($permintaan->dokumen_pendukung_path, 'Dokumen pendukung tidak ditemukan pada server.');
+    }
+
+    public function lihatKtpPendaftaran(Request $request, PendaftaranAkunWarga $pendaftaran): Response
+    {
+        $user = $this->penggunaAktif($request);
+        abort_unless(in_array($user->role, ['superadmin', 'admin', 'sekretaris'], true)
+            || ($user->role === 'warga' && $pendaftaran->user_id === $user->id), 403);
+        abort_unless(filled($pendaftaran->file_ktp_path), 404, 'Pendaftaran ini tidak memiliki berkas KTP.');
+
+        return $this->responsBerkasPrivat($pendaftaran->file_ktp_path, 'Berkas fisik KTP tidak ditemukan pada server.');
+    }
 
     /**
      * Tampilkan berkas lampiran persyaratan kepada pemilik pengajuan atau staf.

@@ -15,7 +15,7 @@ class JenisSuratAuditService
             ->findOrFail($jenisSurat->id);
 
         return [
-            'jenis' => $record->only(['nama_surat', 'kode_klasifikasi', 'kode_unit', 'pola_format_nomor', 'mode_counter', 'reset_counter', 'padding_digit', 'status', 'urutan_tampil']),
+            'jenis' => $record->only(['nama_surat', 'nama_layanan', 'kode_klasifikasi', 'kode_unit', 'pola_format_nomor', 'mode_counter', 'reset_counter', 'padding_digit', 'status', 'urutan_tampil']),
             'skema' => $record->skemaFormFields->mapWithKeys(fn ($field): array => [
                 $field->id => [
                     ...$field->only(['parent_group', 'nama_field', 'label', 'tipe_field', 'format_isian', 'referensi_master', 'opsi_pilihan', 'wajib', 'is_optional_group', 'hanya_pemeriksaan', 'kondisi_tipe', 'kondisi_kunci', 'kondisi_nilai', 'urutan']),

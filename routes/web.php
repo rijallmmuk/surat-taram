@@ -10,10 +10,20 @@ Route::get('/', function () {
         'jenisSurat' => JenisSurat::query()
             ->where('status', 'aktif')
             ->orderBy('urutan_tampil')
+            ->orderBy('nama_layanan')
             ->orderBy('nama_surat')
-            ->get(['id', 'nama_surat']),
+            ->get(['id', 'nama_surat', 'nama_layanan']),
     ]);
 })->name('beranda');
+
+Route::get('/sitemap.xml', function () {
+    $berandaUrl = rtrim((string) config('app.url'), '/').'/';
+
+    return response('<?xml version="1.0" encoding="UTF-8"?>'."\n"
+        .'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>'
+        .htmlspecialchars($berandaUrl, ENT_XML1, 'UTF-8')
+        .'</loc></url></urlset>', 200, ['Content-Type' => 'application/xml; charset=UTF-8']);
+})->name('sitemap');
 
 // Named login route untuk standard auth middleware redirect
 Route::get('/login', function () {
@@ -25,6 +35,8 @@ Route::middleware(['auth', 'throttle:60,1'])->group(function () {
     Route::get('/dashboard/task-counts', DashboardTaskCountsController::class)->name('dashboard.task-counts');
     Route::get('/dokumen/lampiran/{lampiran}', [DokumenController::class, 'lihatLampiran'])->name('dokumen.lampiran');
     Route::get('/dokumen/warga/{dokumen}', [DokumenController::class, 'lihatDokumenWarga'])->name('dokumen.warga');
+    Route::get('/dokumen/perubahan-data/{permintaan}', [DokumenController::class, 'lihatDokumenPerubahanData'])->name('dokumen.perubahan-data');
+    Route::get('/dokumen/pendaftaran-ktp/{pendaftaran}', [DokumenController::class, 'lihatKtpPendaftaran'])->name('dokumen.pendaftaran-ktp');
     Route::get('/dokumen/surat/{pengajuan}', [DokumenController::class, 'unduhSuratResmi'])->name('dokumen.surat');
     Route::get('/dokumen/draf/{pengajuan}', [DokumenController::class, 'tinjauDrafPdf'])->name('dokumen.draf');
     Route::get('/simulasi-surat/{jenisSurat}', [DokumenController::class, 'simulasiCetakPdf'])->name('jenis-surat.simulasi-pdf');

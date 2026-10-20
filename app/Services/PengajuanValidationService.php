@@ -367,7 +367,7 @@ class PengajuanValidationService
         $disk = Storage::disk('local');
         $mimeType = $disk->mimeType($file);
 
-        if (! in_array($mimeType, ['application/pdf', 'image/jpeg', 'image/png'], true)
+        if (! in_array($mimeType, ['application/pdf', 'application/x-pdf', 'image/jpeg', 'image/jpg', 'image/pjpeg', 'image/png'], true)
             || $disk->size($file) > 5 * 1024 * 1024) {
             return false;
         }

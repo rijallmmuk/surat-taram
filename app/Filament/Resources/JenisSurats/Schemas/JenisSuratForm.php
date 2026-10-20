@@ -429,12 +429,16 @@ class JenisSuratForm
                         ->headerActions([self::guideAction('panduanBuilderNama')])
                         ->schema([
                             TextInput::make('nama_surat')
-                                ->label('Nama yang akan dilihat warga')
-                                ->helperText('Gunakan nama resmi pada surat, misalnya Surat Keterangan Usaha.')
+                                ->label('Judul resmi pada surat')
+                                ->helperText('Judul ini dipakai pada dokumen resmi yang diterbitkan.')
                                 ->required()
                                 ->maxLength(150)
                                 ->unique(ignoreRecord: true)
                                 ->live(onBlur: true),
+                            TextInput::make('nama_layanan')
+                                ->label('Nama layanan untuk warga')
+                                ->helperText('Opsional. Jika dikosongkan, warga melihat judul resmi surat.')
+                                ->maxLength(150),
                         ]),
                     Section::make('Nomor surat')
                         ->description('Kode awal sudah terisi. Sesuaikan dengan buku register Nagari bila diperlukan.')

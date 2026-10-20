@@ -39,6 +39,7 @@ test('builder mencatat create dan perubahan status serta aturan nomor dengan akt
     Livewire::test(CreateJenisSurat::class)
         ->fillForm([
             'nama_surat' => 'Surat Audit Builder',
+            'nama_layanan' => 'Layanan Audit untuk Warga',
             'kode_klasifikasi' => '470',
             'kode_unit' => 'PEL',
             'status' => 'draft',
@@ -49,7 +50,9 @@ test('builder mencatat create dan perubahan status serta aturan nomor dengan akt
     $jenisSurat = JenisSurat::where('nama_surat', 'Surat Audit Builder')->firstOrFail();
     $createLog = LogAktivitas::where('aksi', 'buat_jenis_surat')->where('target_id', $jenisSurat->id)->firstOrFail();
     expect($createLog->user_id)->toBe($admin->id)
-        ->and($createLog->keterangan)->toContain('jenis: null →');
+        ->and($createLog->keterangan)->toContain('jenis: null →')
+        ->toContain('"nama_layanan":"Layanan Audit untuk Warga"')
+        ->and($jenisSurat->nama_layanan)->toBe('Layanan Audit untuk Warga');
 
     Livewire::test(EditJenisSurat::class, ['record' => $jenisSurat->id])
         ->fillForm([

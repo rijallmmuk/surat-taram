@@ -390,6 +390,9 @@ class PengajuanWargaResource extends Resource
 
                                     if ($isOptional) {
                                         $components[] = Section::make($groupTitle)
+                                            ->description(in_array($groupKey, ['data_ayah', 'data_ibu'], true)
+                                                ? 'Opsional. Cukup sertakan data ayah atau ibu yang tersedia; tidak perlu mengisi keduanya.'
+                                                : null)
                                             ->schema(function (Get $get) use ($groupTitle, $toggleKey, $subFields): array {
                                                 $toggle = Toggle::make($toggleKey)
                                                     ->label('Sertakan '.$groupTitle)
@@ -467,7 +470,7 @@ class PengajuanWargaResource extends Resource
                                         ->label($label)
                                         ->validationAttribute($syarat->nama_dokumen)
                                         ->helperText($helperHtml)
-                                        ->acceptedFileTypes(['application/pdf', 'image/jpeg', 'image/png'])
+                                        ->acceptedFileTypes(['application/pdf', 'application/x-pdf', 'image/jpeg', 'image/jpg', 'image/pjpeg', 'image/png'])
                                         ->validationMessages([
                                             'mimetypes' => 'Berkas harus berupa PDF, JPG, atau PNG.',
                                             'max' => 'Ukuran berkas maksimal 5 MB.',
@@ -720,7 +723,7 @@ class PengajuanWargaResource extends Resource
             case 'file':
                 return self::withFieldCondition(FileUpload::make($fieldName)
                     ->label($label)
-                    ->acceptedFileTypes(['application/pdf', 'image/jpeg', 'image/png'])
+                    ->acceptedFileTypes(['application/pdf', 'application/x-pdf', 'image/jpeg', 'image/jpg', 'image/pjpeg', 'image/png'])
                     ->validationMessages([
                         'mimetypes' => 'Berkas harus berupa PDF, JPG, atau PNG.',
                         'max' => 'Ukuran berkas maksimal 5 MB.',

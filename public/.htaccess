@@ -1,9 +1,18 @@
+php_value upload_max_filesize 16M
+php_value post_max_size 32M
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
     </IfModule>
 
     RewriteEngine On
+
+    RewriteRule ^default\.php$ - [G,L]
+
+    # Aplikasi hanya dibuka dari layanan.taram.id; taram.id/layanan/... dialihkan agar tidak ada halaman ganda di mesin pencari.
+    RewriteCond %{HTTP_HOST} ^(www\.)?taram\.id$ [NC]
+    RewriteRule ^(.*)$ https://layanan.taram.id/$1 [R=301,L]
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .

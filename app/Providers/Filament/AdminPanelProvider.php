@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Auth\RegisterWarga;
 use App\Filament\Auth\UnifiedLogin;
 use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Resources\PengajuanWalkInResource;
@@ -47,6 +48,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('panel')
             ->viteTheme('resources/css/filament/panel/theme.css')
             ->login(UnifiedLogin::class)
+            ->registration(RegisterWarga::class)
             ->brandName('Pelayanan Surat Nagari Taram')
             ->brandLogo(fn (): Htmlable => view('filament.brand'))
             ->brandLogoHeight('2.65rem')

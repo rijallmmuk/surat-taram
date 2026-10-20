@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Filament\Resources\ArsipSuratResource;
+use App\Filament\Resources\PendaftaranAkunWargas\PendaftaranAkunWargaResource;
 use App\Filament\Resources\PengajuanWargaResource;
 use App\Filament\Resources\PermintaanPerubahanData\PermintaanPerubahanDataResource;
 use App\Filament\Resources\PersetujuanPengajuanResource;
@@ -45,7 +46,9 @@ class TaskDashboardWidget extends Widget
                 $this->card('Perlu verifikasi', $counts['verifikasi'], 'Pengajuan baru yang menunggu pemeriksaan.', VerifikasiPengajuanResource::getUrl(), 'heroicon-o-document-magnifying-glass'),
                 $this->card('Koreksi data menunggu', $counts['perubahan_data'], 'Usulan data warga yang perlu diputuskan.', PermintaanPerubahanDataResource::getUrl(), 'heroicon-o-identification'),
                 $this->card('Menunggu tanda tangan', $counts['tanda_tangan'], 'Pengajuan yang sudah lolos pemeriksaan.', ArsipSuratResource::getUrl(), 'heroicon-o-pencil-square'),
-                $this->card('Terbit hari ini', $counts['diterbitkan_hari_ini'], 'Surat resmi yang selesai hari ini.', ArsipSuratResource::getUrl(), 'heroicon-o-document-check'),
+                $counts['akun_warga_menunggu'] > 0
+                    ? $this->card('Akun warga menunggu', $counts['akun_warga_menunggu'], 'Pendaftaran akun yang perlu diverifikasi.', PendaftaranAkunWargaResource::getUrl(), 'heroicon-o-user-plus')
+                    : $this->card('Terbit hari ini', $counts['diterbitkan_hari_ini'], 'Surat resmi yang selesai hari ini.', ArsipSuratResource::getUrl(), 'heroicon-o-document-check'),
             ],
             'wali_nagari' => [
                 $this->card('Siap ditandatangani', $counts['tanda_tangan'], 'Pengajuan terverifikasi yang menunggu keputusan Anda.', PersetujuanPengajuanResource::getUrl(), 'heroicon-o-pencil-square'),
@@ -54,7 +57,9 @@ class TaskDashboardWidget extends Widget
             'superadmin' => [
                 $this->card('Akun Admin aktif', $counts['akun_admin_aktif'], 'Akun pengelola Nagari yang dapat masuk.', UserResource::getUrl(), 'heroicon-o-users'),
                 $this->card('Perlu verifikasi', $counts['verifikasi'], 'Pengajuan baru yang menunggu pemeriksaan.', VerifikasiPengajuanResource::getUrl(), 'heroicon-o-document-magnifying-glass'),
-                $this->card('Siap ditandatangani', $counts['tanda_tangan'], 'Pengajuan terverifikasi yang dapat Anda terbitkan.', PersetujuanPengajuanResource::getUrl(), 'heroicon-o-pencil-square'),
+                $counts['akun_warga_menunggu'] > 0
+                    ? $this->card('Akun warga menunggu', $counts['akun_warga_menunggu'], 'Pendaftaran akun yang perlu diverifikasi.', PendaftaranAkunWargaResource::getUrl(), 'heroicon-o-user-plus')
+                    : $this->card('Siap ditandatangani', $counts['tanda_tangan'], 'Pengajuan terverifikasi yang dapat Anda terbitkan.', PersetujuanPengajuanResource::getUrl(), 'heroicon-o-pencil-square'),
                 $this->card('Koreksi data menunggu', $counts['perubahan_data'], 'Usulan data warga yang perlu diputuskan.', PermintaanPerubahanDataResource::getUrl(), 'heroicon-o-identification'),
             ],
             default => [],

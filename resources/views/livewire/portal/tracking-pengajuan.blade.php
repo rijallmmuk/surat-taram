@@ -59,7 +59,7 @@
                         </div>
 
                         <h3 class="text-lg font-bold text-slate-900 leading-snug">
-                            {{ $p->jenisSurat->nama_surat ?? 'Surat Nagari' }}
+                            {{ $p->jenisSurat?->nama_layanan_tampil ?? 'Surat Nagari' }}
                         </h3>
 
                         <div class="text-xs text-slate-500 space-x-2">

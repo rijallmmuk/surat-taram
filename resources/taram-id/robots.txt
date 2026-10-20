@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /staging/
+
+Sitemap: https://taram.id/sitemap.xml

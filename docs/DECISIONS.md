@@ -1986,3 +1986,62 @@ Sesuai audit menyeluruh dari kebutuhan, skema form dinamis, template editor, che
   4. `app:cek-deploy` menerima verifikasi oleh Admin selama akun Sekretaris belum dibuat; Wali aktif tetap wajib.
   5. Dokumen contoh surat berdata warga asli dipindah ke `../surat-taram-arsip/` di luar repo; NIK dan nama asli yang tersalin ke test diganti data rekaan. Dokumen perencanaan dipindah ke `docs/`, data seeder ke `database/seeders/data/`. GitHub menerima riwayat baru satu commit; riwayat lengkap tersimpan di branch lokal `arsip-riwayat-lokal` yang tidak boleh di-push.
 
+---
+
+### 128. Syarat Penghasilan, Bukti Koreksi Data, dan Jumlah KK Jorong
+
+- **Tanggal**: 12 Oktober 2026
+- **Konteks**: Perangkat Nagari meminta slip gaji untuk surat penghasilan, data penunjang perubahan data, reset nomor tahunan, jumlah KK per Jorong, serta akses warga mengganti sandi. Pemilik mengonfirmasi bukti penghasilan pengganti diperbolehkan; bukti koreksi wajib kecuali perubahan nomor HP; ganti sandi langsung tanpa persetujuan Sekretaris dan tanpa registrasi mandiri.
+- **Keputusan**:
+  1. Surat penghasilan starter memiliki syarat wajib `Slip Gaji / Bukti Penghasilan`; surat pernyataan penghasilan diterima bagi warga tanpa slip gaji. Persyaratan tetap data builder, bukan aturan khusus di service pengajuan. `SyaratPenghasilanSeeder` menambahkan syarat ke konfigurasi yang sudah ada secara idempoten, mencatat log, dan tidak membuat kembali jenis surat yang dihapus atau menimpa template. Pengecualian unggahan bagi pengajuan petugas pada #123 tetap berlaku.
+  2. Permintaan perubahan/pelengkapan data baru wajib menyertakan satu dokumen pendukung bila ada data selain nomor HP yang berubah. Berkas PDF/JPG/PNG maksimal 5 MB; beberapa bukti dapat digabung dalam satu PDF. File tersimpan di disk privat pada direktori akun pengaju, divalidasi ulang oleh service, dan dirujuk dalam log aktivitas. Hanya pengaju aktif dan superadmin/admin/sekretaris dapat membuka bukti. Permintaan lama tanpa berkas tetap dapat diperiksa.
+  3. Tabel Jorong menampilkan **Jumlah KK**, dihitung sebagai nomor KK unik yang tidak kosong dari penduduk berstatus aktif per Jorong. Anggota keluarga dengan nomor KK sama dihitung sekali; penduduk meninggal/pindah tidak dihitung.
+  4. Reset nomor tahunan dan ganti sandi warga sudah tersedia serta dibuktikan tes; keduanya dipertahankan. Builder tetap menyimpan pilihan kebijakan reset per jenis surat. Warga mengganti sandi melalui Profil Saya dengan sandi saat ini, sandi baru minimal delapan karakter, dan konfirmasi sandi.
+
+---
+
+### 129. Registrasi Mandiri Warga, Verifikasi Akun Petugas, Perbaikan Login NIK, dan Penguatan Unggah Berkas
+
+- **Tanggal**: 20 Oktober 2026
+- **Konteks**: Warga membutuhkan fitur registrasi mandiri sebelum dilayani, akun yang didaftarkan wajib diverifikasi perangkat nagari sebelum dapat login, tombol "Masuk" pada login NIK + tanggal lahir kerap macet di halaman login tanpa pesan kesalahan, serta fitur upload berkas dan konfigurasi penyimpanan perlu dipastikan aman dan kompatibel di HP maupun komputer.
+- **Keputusan**:
+  1. **Registrasi Mandiri Warga**: Halaman `/panel/register` (`RegisterWarga`) tersedia di panel auth untuk warga mendaftarkan akun secara mandiri (NIK 16 digit, nama lengkap, tempat/tanggal lahir, jenis kelamin, jorong, nomor HP, dan kata sandi opsional). Akun yang dibuat otomatis berstatus `status_verifikasi = 'menunggu'` dan `is_active = false`. Jika kata sandi dikosongkan, sandi bawaan menggunakan tanggal lahir (DDMMYYYY).
+  2. **Verifikasi Petugas Nagari**: Akun menunggu verifikasi muncul di antrean tabel Penduduk dengan teks plain text murni (tanpa badge warna-warni sesuai keputusan #58). Petugas (`sekretaris`, `admin`, `superadmin`) dapat melakukan aksi `verifikasiAkunWarga` (mengaktifkan akun dan mencatat verifikator) atau `tolakAkunWarga` (wajib mengisi alasan penolakan). Semua aksi verifikasi dan penolakan tercatat di `log_aktivitas`.
+  3. **Perbaikan Otentikasi & Login Feedback**: Tombol login tidak lagi macet tanpa pesan. Pembatasan percobaan login (rate limiter) menampilkan pesan validasi form inline yang jelas alih-alih gagal senyap. Input NIK dinormalisasi (menghilangkan spasi/tanda hubung). Kata sandi tanggal lahir dicocokkan fleksibel terhadap variasi format (`dmY`, `d-m-Y`, `d/m/Y`, `Y-m-d`) khusus untuk akun yang belum mengganti kata sandi bawaan dan tanpa menimpa kata sandi kustom yang telah dibuat warga. Akun berstatus belum diverifikasi atau ditolak menerima pesan galat spesifik beserta alasan penolakan petugas.
+  4. **Kompatibilitas Unggah Berkas & Keamanan Storage**: Format MIME yang diizinkan diperluas ke `application/pdf`, `application/x-pdf`, `image/jpeg`, `image/jpg`, `image/pjpeg`, dan `image/png` pada semua form dan service validator untuk mengakomodasi berbagai peramban mobile/desktop. Berkas privat disimpan di `storage/app/private` dengan berkas perlindungan `storage/app/private/.htaccess` (`Require all denied`). Tautan simbolik `public/storage` dibuat relatif ke `../storage/app/public` sehingga aman, portabel di hosting, dan tidak mengekspos berkas privat warga.
+
+---
+
+### 130. Pemisahan Menu Khusus Pendaftaran Akun Warga dan Penonaktifan Rate Limiter Login
+
+- **Tanggal**: 20 Oktober 2026
+- **Konteks**: Pengguna menginginkan alur verifikasi pendaftaran akun mandiri warga tidak dicampur ke dalam menu "Data Warga", melainkan memiliki menu terpisah mirip dengan "Permintaan Perubahan Data" di mana petugas dapat melihat secara detail seluruh data yang diajukan warga sebelum memutuskan. Selain itu, pembatasan percobaan login (rate limiter) diminta untuk dinonaktifkan sepenuhnya.
+- **Keputusan**:
+  1. **Menu Tersendiri `PendaftaranAkunWargaResource`**: Dibuat menu baru "Pendaftaran Akun Warga" di bawah grup navigasi Kependudukan dengan icon `Heroicon::OutlinedUserPlus` dan badge jumlah pengajuan yang berstatus menunggu. Menu ini khusus diakses oleh peran petugas (`superadmin`, `admin`, `sekretaris`).
+  2. **Tabel & Halaman Rincian Data**:
+     - Tabel daftar pendaftaran menampilkan kolom Diajukan, NIK, Nama Lengkap, Jorong Domisili, No. HP, dan Status dalam format plain text (bebas badge warna-warni).
+     - Halaman detail (`ViewPendaftaranAkunWarga`) menyajikan infolist lengkap: NIK, nama lengkap, tempat dan tanggal lahir, jenis kelamin, jorong, nomor HP, waktu mendaftar, status, petugas verifikator, serta alasan penolakan bila ditolak.
+     - Aksi Setujui (aktifkan akun) dan Tolak (wajib alasan penolakan) dapat dieksekusi langsung dari tabel maupun dari halaman detail rincian pengajuan.
+  3. **Penyimpanan Riwayat Terisolasi**: Dibuat tabel `pendaftaran_akun_wargas` dan model `PendaftaranAkunWarga` yang mencatat setiap pengajuan pendaftaran mandiri warga secara mandiri dan utuh.
+  4. **Pembersihan Menu Data Warga**: Seluruh aksi verifikasi dan penolakan akun dihapus dari `PenduduksTable` agar menu Data Warga tetap bersih dan fokus pada pengelolaan data kependudukan.
+  5. **Penonaktifan Rate Limiter Login**: Method `rateLimit(...)` pada `UnifiedLogin` di-override menjadi tanpa operasi (no-op) sehingga proses masuk tidak membatasi atau memblokir pengguna/petugas dengan galat rate limiting.
+
+---
+
+### 131. Kelengkapan Field Demografis Registrasi Mandiri Warga dan Unggah Dokumen KTP
+
+- **Tanggal**: 20 Oktober 2026
+- **Konteks**: Formulir pendaftaran mandiri warga sebelumnya hanya memuat data dasar (NIK, nama, tempat/tgl lahir, jenis kelamin, jorong, no HP). Pengguna meminta agar isian registrasi dibuat lengkap sesuai dengan formulir "Tambah Warga" (`PendudukForm`) dan wajib melampirkan berkas fisik pendukung berupa foto/scan KTP asli warga agar petugas dapat memverifikasi keabsahan data sebelum akun diaktifkan.
+- **Keputusan**:
+  1. **Kelengkapan Isian Demografis**:
+     - Formulir registrasi `RegisterWarga` diperluas dengan field lengkap: NIK (16 digit angka), Nomor KK (16 digit angka), Nama Lengkap, Jenis Kelamin, Tempat Lahir, Tanggal Lahir, Jorong Domisili, Agama (`ref_agama_id`), Status Perkawinan (`ref_status_kawin_id`), Pekerjaan (`ref_pekerjaan_id`), Pendidikan Terakhir (`ref_pendidikan_id`), Kewarganegaraan (`ref_kewarganegaraan_id`), Nomor HP / WhatsApp, Berkas KTP, dan Kata Sandi opsional.
+     - Seluruh isian demografis langsung tersimpan ke master `Penduduk` dan dicatat snapshot-nya pada entitas `PendaftaranAkunWarga`.
+  2. **Unggah Dokumen KTP & Keamanan Akses**:
+     - Registrasi mewajibkan unggah berkas KTP berformat PDF, JPG, atau PNG dengan batas ukuran 5 MB.
+     - Berkas disimpan pada disk privat di direktori `storage/app/private/pendaftaran-ktp`.
+     - Akses berkas dilindungi oleh route `dokumen.pendaftaran-ktp` yang hanya dapat diakses oleh petugas (`superadmin`, `admin`, `sekretaris`) dan warga pemilik akun terkait setelah terautentikasi.
+  3. **Auto-indexing Dokumen Warga**:
+     - Saat petugas menyetujui pendaftaran pada menu "Pendaftaran Akun Warga", service `RegistrasiWargaService::verifikasi` secara otomatis mengindeks berkas KTP tersebut ke dalam bank digital `dokumen_warga` dengan relasi ke `master_syarat_dokumen_id` bertipe 'KTP Pemohon' (`ktp_pemohon`). Dengan demikian, warga tidak perlu mengunggah ulang KTP saat mengajukan surat resmi yang mempersyaratkan KTP.
+  4. **Penyajian Infolist Petugas**:
+     - Halaman detail `ViewPendaftaranAkunWarga` mengelompokkan data yang diajukan ke dalam: Identitas Utama Kependudukan, Data Sosial/Keluarga/Domisili, Dokumen Pendukung KTP (tautan langsung yang membuka berkas KTP di tab baru), serta Status & Riwayat Verifikasi Petugas. Semua disajikan dalam format teks murni rapi tanpa badge warna-warni (keputusan #58).
+

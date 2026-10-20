@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\KatalogTagSurat;
 use App\Services\NomorSuratGenerator;
 use App\Services\PdfSuratGenerator;
+use App\Services\PengajuanValidationService;
 use App\Services\PenyusunSurat;
 use Database\Seeders\MasterReferensiSeeder;
 use Database\Seeders\NagariSeeder;
@@ -268,6 +269,48 @@ test('sktm form allows interactive toggle for parents and renders parent data ac
         ->and($htmlRendered)->toContain('Siti Maryam');
 });
 
+test('validasi SKTM menerima data ayah saja atau data ibu saja', function () {
+    $sktm = JenisSurat::where('nama_surat', 'Surat Keterangan Tidak Mampu')->firstOrFail();
+    $validasi = app(PengajuanValidationService::class);
+
+    $dataOrangTua = [
+        'ayah' => [
+            'nama' => 'Rustam Effendi',
+            'tempat_lahir' => 'Taram',
+            'tanggal_lahir' => '1965-04-12',
+            'pekerjaan' => 'Petani/Pekebun',
+            'status' => 'Kawin',
+            'agama' => 'Islam',
+            'nik' => '1307050101660091',
+            'alamat' => 'Jorong Parak Kubang',
+        ],
+        'ibu' => [
+            'nama' => 'Siti Maryam',
+            'tempat_lahir' => 'Taram',
+            'tanggal_lahir' => '1970-08-20',
+            'pekerjaan' => 'Mengurus Rumah Tangga',
+            'status' => 'Kawin',
+            'agama' => 'Islam',
+            'nik' => '1307054101700092',
+            'alamat' => 'Jorong Parak Kubang',
+        ],
+    ];
+
+    foreach (['ayah', 'ibu'] as $orangTua) {
+        $dataIsian = [
+            'keperluan_sktm' => 'Persyaratan Keringanan UKT Kuliah',
+            'sertakan_data_ayah' => $orangTua === 'ayah',
+            'sertakan_data_ibu' => $orangTua === 'ibu',
+        ];
+        foreach ($dataOrangTua[$orangTua] as $atribut => $nilai) {
+            $dataIsian[$orangTua.'_'.$atribut] = $nilai;
+        }
+
+        $aturan = $validasi->buildRules($sktm, dataIsian: $dataIsian);
+        validator(['dataIsian' => $dataIsian], $aturan['rules'], $aturan['messages'], $aturan['attributes'])->validate();
+    }
+});
+
 test('form pengajuan displays file requirements guidance and size limits clearly', function () {
     $wargaUser = User::whereHas('roles', fn ($q) => $q->where('name', 'warga'))->first();
     $this->actingAs($wargaUser);
@@ -279,5 +322,6 @@ test('form pengajuan displays file requirements guidance and size limits clearly
         ->assertSee('Maks. 5 MB')
         ->assertSee('PDF / JPG / PNG')
         ->assertSee('Sertakan Data Ayah Kandung')
-        ->assertSee('Sertakan Data Ibu Kandung');
+        ->assertSee('Sertakan Data Ibu Kandung')
+        ->assertSee('Cukup sertakan data ayah atau ibu yang tersedia; tidak perlu mengisi keduanya.');
 });

@@ -24,6 +24,7 @@ class StarterJenisSuratSeeder extends Seeder
             }
 
             $this->seedStarterLetters();
+            $this->call(SyaratPenghasilanSeeder::class);
         });
     }
 
@@ -89,6 +90,7 @@ class StarterJenisSuratSeeder extends Seeder
         $skUmum = JenisSurat::updateOrCreate(
             ['nama_surat' => 'Surat Keterangan'],
             [
+                'nama_layanan' => 'Surat Keterangan Perbedaan Data Buku Nikah dan Kartu Keluarga',
                 'kode_klasifikasi' => '400.10.2.2',
                 'kode_unit' => 'TUU',
                 'pola_format_nomor' => '{KODE_KLASIFIKASI}/{NOMOR_URUT}/{KODE_UNIT}/{TAHUN}',

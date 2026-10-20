@@ -6,6 +6,7 @@ use App\Models\Penduduk;
 use App\Models\PermintaanPerubahanData;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -31,11 +32,28 @@ class PerubahanDataPendudukService
 
     public function __construct(private AuditLogService $auditLog) {}
 
-    public function ajukan(User $warga, array $usulan, bool $lengkapiSemua = false): PermintaanPerubahanData
+    /** @param array<string, mixed> $usulan */
+    public function memerlukanDokumenPendukung(Penduduk $penduduk, array $usulan): bool
+    {
+        foreach (array_keys(self::FIELDS) as $field) {
+            if ($field === 'no_hp' || ! array_key_exists($field, $usulan)) {
+                continue;
+            }
+
+            $current = $field === 'tanggal_lahir' ? $penduduk->tanggal_lahir?->toDateString() : $penduduk->{$field};
+            if ((string) $current !== (string) $usulan[$field]) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function ajukan(User $warga, array $usulan, bool $lengkapiSemua = false, ?string $dokumenPendukung = null): PermintaanPerubahanData
     {
         abort_unless($warga->role === 'warga' && $warga->penduduk_nik, 403);
 
-        return DB::transaction(function () use ($warga, $usulan, $lengkapiSemua): PermintaanPerubahanData {
+        return DB::transaction(function () use ($warga, $usulan, $lengkapiSemua, $dokumenPendukung): PermintaanPerubahanData {
             $penduduk = Penduduk::query()->whereKey($warga->penduduk_nik)->lockForUpdate()->firstOrFail();
 
             if (PermintaanPerubahanData::query()->where('penduduk_nik', $penduduk->nik)->where('status', 'menunggu')->exists()) {
@@ -81,11 +99,27 @@ class PerubahanDataPendudukService
                 throw ValidationException::withMessages(['data_baru' => 'Ubah sedikitnya satu data sebelum mengirim permintaan.']);
             }
 
+            if ($this->memerlukanDokumenPendukung($penduduk, $data) && blank($dokumenPendukung)) {
+                throw ValidationException::withMessages(['dokumen_pendukung_path' => 'Dokumen pendukung wajib diunggah untuk perubahan data selain nomor HP.']);
+            }
+
+            if (filled($dokumenPendukung)) {
+                $disk = Storage::disk('local');
+                if (! str_starts_with($dokumenPendukung, 'perubahan-data/'.$warga->id.'/')
+                    || str_contains($dokumenPendukung, '..')
+                    || ! $disk->exists($dokumenPendukung)
+                    || ! in_array($disk->mimeType($dokumenPendukung), ['application/pdf', 'application/x-pdf', 'image/jpeg', 'image/jpg', 'image/pjpeg', 'image/png'], true)
+                    || $disk->size($dokumenPendukung) > 5 * 1024 * 1024) {
+                    throw ValidationException::withMessages(['dokumen_pendukung_path' => 'Dokumen pendukung harus milik Anda, berupa PDF, JPG, atau PNG maksimal 5 MB.']);
+                }
+            }
+
             $permintaan = PermintaanPerubahanData::create([
                 'penduduk_nik' => $penduduk->nik,
                 'diajukan_oleh_user_id' => $warga->id,
                 'data_lama' => $lama,
                 'data_baru' => $baru,
+                'dokumen_pendukung_path' => $dokumenPendukung,
                 'status' => 'menunggu',
             ]);
 
@@ -147,7 +181,7 @@ class PerubahanDataPendudukService
             description: $keterangan,
             before: $permintaan->data_lama ?? [],
             after: $permintaan->data_baru ?? [],
-            metadata: ['status' => $permintaan->status],
+            metadata: ['status' => $permintaan->status, 'dokumen_pendukung_path' => $permintaan->dokumen_pendukung_path],
         );
     }
 }
